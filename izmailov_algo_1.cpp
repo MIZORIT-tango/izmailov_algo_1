@@ -80,8 +80,8 @@ void show_menu(Pipe& p, CompressStation& c) {
 
                 std::cout << "Enter length of pipe:\n";
                 std::cin >> safe_length;
-                if (std::cin.fail()) {
-                    std::cout << "Invalid input! Please enter a float.\n\n";
+                if (std::cin.fail() || safe_length<=0) {
+                    std::cout << "Invalid input! Length is must be float and over 0.\n\n";
                     clearInputBuffer();
                     type_error = true;
                 }
@@ -95,8 +95,8 @@ void show_menu(Pipe& p, CompressStation& c) {
                     std::stringstream ss(input);
                     int value;
                     
-                    if (!(ss >> value) || !ss.eof()) {
-                        std::cout << "Invalid input! Please enter an integer (without decimal point).\n\n";
+                    if (!(ss >> value) || !ss.eof() || safe_diameter <= 0) {
+                        std::cout << "Invalid input! Please enter an integer over 0 (without decimal point).\n\n";
                         type_error = true;
                     }
                     else {
