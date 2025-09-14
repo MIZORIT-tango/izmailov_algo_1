@@ -2,6 +2,7 @@
 #include <string>
 #include <limits>
 #include <sstream>
+#include <regex>
 
 struct Pipe {
     std::string name= "0";
@@ -51,6 +52,35 @@ void clearInputBuffer() {
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
+bool isValidFloat(const std::string& input) {
+    if (input.empty()) return false;
+
+    int start = 0;
+    bool has_decimal = false;
+    bool has_digit = false;
+
+    if (input[0] == '+' || input[0] == '-') {
+        start = 1;
+        if (input.size() == 1) return false;
+    }
+
+    for (int i = start; i < input.size(); i++) {
+        char c = input[i];
+
+        if (c >= '0' && c <= '9') {
+            has_digit = true;
+        }
+        else if (c == '.' || c == ',') {
+            if (has_decimal) return false;
+            has_decimal = true;
+        }
+        else {
+            return false;
+        }
+    }
+    return has_digit;
+}
+
 void show_menu(Pipe& p, CompressStation& c) {
     int menu_choose;
     while (true) {
@@ -78,24 +108,32 @@ void show_menu(Pipe& p, CompressStation& c) {
                 clearInputBuffer();
                 std::getline(std::cin, safe_name);
 
-                std::cout << "Enter length of pipe:\n";
-                std::cin >> safe_length;
-                if (std::cin.fail() || safe_length<=0) {
-                    std::cout << "Invalid input! Length is must be float and over 0.\n\n";
-                    clearInputBuffer();
+                std::cout << "Enter length of pipe:\n";                
+                std::string input;
+                std::getline(std::cin, input);
+
+                if (!isValidFloat(input)) {
+                    std::cout << "Invalid input! Please enter a float number without spaces.\n\n";
                     type_error = true;
+                }
+                else {
+                    std::replace(input.begin(), input.end(), ',', '.');
+                    safe_length = std::stof(input);
+                    if (safe_length <= 0) {
+                        std::cout << "Invalid input! Please enter a positive number.\n\n";
+                        type_error = true;
+                    }
                 }
 
                 if (!type_error) {
                     std::cout << "Enter diameter of pipe:\n";
 
-                    clearInputBuffer();
                     std::string input;
                     std::getline(std::cin, input);
                     std::stringstream ss(input);
                     int value;
                     
-                    if (!(ss >> value) || !ss.eof() || safe_diameter <= 0) {
+                    if (!(ss >> value) || !ss.eof() || value <= 0) {
                         std::cout << "Invalid input! Please enter an integer over 0 (without decimal point).\n\n";
                         type_error = true;
                     }
@@ -115,9 +153,60 @@ void show_menu(Pipe& p, CompressStation& c) {
             break;
 
         case 2:
+        {
+            bool type_error = false;
+
+            std::string safe_name;
+            int safe_number_of_workshops = 0;
+            int safe_number_of_workshops_in_work = 0;
+
             std::cout << "Enter name of CS\n";
-            std::getline(std::cin, c.name);
+            clearInputBuffer();
+            std::getline(std::cin, safe_name);
+
+            std::cout << "Enter number of workshops:\n";
+            std::string input;
+            std::getline(std::cin, input);
+            std::stringstream ss(input);
+            int value;
+            if (!(ss >> value) || !ss.eof() || value <= 0) {
+                std::cout << "Invalid input! Please enter an integer over 0 (without decimal point).\n\n";
+                type_error = true;
+            }
+            else {
+                safe_number_of_workshops = value;
+            }
+
+            if (!type_error) {
+                std::cout << "Enter number of workshops in work:\n";
+                std::string input;
+                std::getline(std::cin, input);
+                std::stringstream ss(input);
+                int value;
+
+                if (!(ss >> value) || !ss.eof() || value <= 0) {
+                    std::cout << "Invalid input! Please enter an integer over 0 (without decimal point).\n\n";
+                    type_error = true;
+                }
+                if (value > safe_number_of_workshops) {
+                    std::cout << "Invalid input! number of workshops in work can`t be over than number of workshops\n\n";
+                    type_error = true;
+                }
+                else {
+                    safe_number_of_workshops_in_work = value;
+                }
+            }
+
+            if (!type_error) {
+                c.name = safe_name;
+                c.number_of_workshops = safe_number_of_workshops;
+                c.number_of_workshops_in_work = safe_number_of_workshops_in_work;
+                std::cout << "CS created successfully!\n\n";
+            }
+            clearInputBuffer();
+
             break;
+        }
 
         case 3:
             
