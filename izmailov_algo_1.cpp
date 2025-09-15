@@ -153,7 +153,6 @@ void show_menu(Pipe& p, CompressStation& c) {
                     int safe_diameter = 0;
 
                     std::cout << "Enter name of pipe:\n";
-                    clearInputBuffer();
                     std::getline(std::cin, safe_name);
                     safe_name = trim(safe_name);
                     if (safe_name == "error_input") {
@@ -205,12 +204,18 @@ void show_menu(Pipe& p, CompressStation& c) {
                     int safe_number_of_workshops_in_work = 0;
 
                     std::cout << "Enter name of CS\n";
-                    clearInputBuffer();
                     std::getline(std::cin, safe_name);
-
-                    std::cout << "Enter number of workshops:\n";
-                    if (!isValidInt(safe_number_of_workshops)) {
+                    safe_name = trim(safe_name);
+                    if (safe_name == "error_input") {
+                        std::cout << "Invalid input! The name must contain at least one letter or number.\n\n";
                         type_error = true;
+                    }
+
+                    if (!type_error) {
+                        std::cout << "Enter number of workshops:\n";
+                        if (!isValidInt(safe_number_of_workshops)) {
+                            type_error = true;
+                        }
                     }
 
                     if (!type_error) {
