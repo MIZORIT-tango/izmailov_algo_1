@@ -3,6 +3,7 @@
 #include <limits>
 #include <sstream>
 #include <regex>
+#include <cctype>
 
 struct Pipe {
     std::string name= "0";
@@ -81,6 +82,48 @@ bool isValidFloat(const std::string& input) {
     return has_digit;
 }
 
+bool isValidInt(int& result) {
+    std::string input;
+    std::getline(std::cin, input);
+    std::stringstream ss(input);
+    int value;
+
+    if (!(ss >> value) || !ss.eof() || value <= 0) {
+        std::cout << "Invalid input! Please enter an integer over 0 (without decimal point).\n\n";
+        return false;
+    }
+    else {
+        result = value;
+        return true;
+    }
+}
+
+std::string trim(const std::string& str) {
+    if (str.empty()) return "error_input";
+
+    size_t start = str.find_first_not_of(" \t\n\r\f\v");
+    size_t end = str.find_last_not_of(" \t\n\r\f\v");
+
+    if (start == std::string::npos) {
+        return "error_input";
+    }
+
+    bool has_alnum = false;
+    for (size_t i = start; i <= end; i++) {
+        if (std::isalnum(static_cast<unsigned char>(str[i]))) {
+            has_alnum = true;
+            break;
+        }
+
+    }    
+    if (has_alnum) {
+        return str.substr(start, end - start + 1);
+    }
+    else {
+        return "error_input";
+    }
+}
+
 void show_menu(Pipe& p, CompressStation& c) {
     int menu_choose;
     while (true) {
@@ -92,150 +135,142 @@ void show_menu(Pipe& p, CompressStation& c) {
             << "5. Edit CS\n"
             << "6. Save\n"
             << "7. Download\n"
-            << "0. Exit\n";
-        std::cin >> menu_choose;
+            << "0. Exit\n";        
 
-        switch (menu_choose) {
-        case 1:
-            {
-                bool type_error = false;  
-
-                std::string safe_name;
-                float safe_length = 0.0f;
-                int safe_diameter = 0;
-
-                std::cout << "Enter name of pipe:\n";
-                clearInputBuffer();
-                std::getline(std::cin, safe_name);
-
-                std::cout << "Enter length of pipe:\n";                
-                std::string input;
-                std::getline(std::cin, input);
-
-                if (!isValidFloat(input)) {
-                    std::cout << "Invalid input! Please enter a float number without spaces.\n\n";
-                    type_error = true;
-                }
-                else {
-                    std::replace(input.begin(), input.end(), ',', '.');
-                    safe_length = std::stof(input);
-                    if (safe_length <= 0) {
-                        std::cout << "Invalid input! Please enter a positive number.\n\n";
-                        type_error = true;
-                    }
-                }
-
-                if (!type_error) {
-                    std::cout << "Enter diameter of pipe:\n";
-
-                    std::string input;
-                    std::getline(std::cin, input);
-                    std::stringstream ss(input);
-                    int value;
-                    
-                    if (!(ss >> value) || !ss.eof() || value <= 0) {
-                        std::cout << "Invalid input! Please enter an integer over 0 (without decimal point).\n\n";
-                        type_error = true;
-                    }
-                    else {
-                        safe_diameter = value;
-                    }
-                }
-
-                if (!type_error) {
-                    p.name = safe_name;
-                    p.length = safe_length;
-                    p.diameter = safe_diameter;
-                    std::cout << "Pipe created successfully!\n\n";
-                }                
-                clearInputBuffer();
-            }
-            break;
-
-        case 2:
-        {
-            bool type_error = false;
-
-            std::string safe_name;
-            int safe_number_of_workshops = 0;
-            int safe_number_of_workshops_in_work = 0;
-
-            std::cout << "Enter name of CS\n";
-            clearInputBuffer();
-            std::getline(std::cin, safe_name);
-
-            std::cout << "Enter number of workshops:\n";
+        try {
             std::string input;
             std::getline(std::cin, input);
-            std::stringstream ss(input);
-            int value;
-            if (!(ss >> value) || !ss.eof() || value <= 0) {
-                std::cout << "Invalid input! Please enter an integer over 0 (without decimal point).\n\n";
-                type_error = true;
+            menu_choose = std::stoi(input);
+
+            if (menu_choose >= 0 && menu_choose <= 7) {
+                switch (menu_choose) {
+                case 1:
+                {
+                    bool type_error = false;
+
+                    std::string safe_name;
+                    float safe_length = 0.0f;
+                    int safe_diameter = 0;
+
+                    std::cout << "Enter name of pipe:\n";
+                    clearInputBuffer();
+                    std::getline(std::cin, safe_name);
+                    safe_name = trim(safe_name);
+                    if (safe_name == "error_input") {
+                        std::cout << "Invalid input! The name must contain at least one letter or number.\n\n";
+                        type_error = true;
+                    }
+
+                    if (!type_error) {
+                        std::cout << "Enter length of pipe:\n";
+                        std::string input;
+                        std::getline(std::cin, input);
+
+                        if (!isValidFloat(input)) {
+                            std::cout << "Invalid input! Please enter a float number without spaces.\n\n";
+                            type_error = true;
+                        }
+                        else {
+                            std::replace(input.begin(), input.end(), ',', '.');
+                            safe_length = std::stof(input);
+                            if (safe_length <= 0) {
+                                std::cout << "Invalid input! Please enter a positive number.\n\n";
+                                type_error = true;
+                            }
+                        }
+                    }
+
+                    if (!type_error) {
+                        std::cout << "Enter diameter of pipe:\n";
+                        if (!isValidInt(safe_diameter)) {
+                            type_error = true;
+                        }
+                    }
+
+                    if (!type_error) {
+                        p.name = safe_name;
+                        p.length = safe_length;
+                        p.diameter = safe_diameter;
+                        std::cout << "Pipe created successfully!\n\n";
+                    }
+                }
+                break;
+
+                case 2:
+                {
+                    bool type_error = false;
+
+                    std::string safe_name;
+                    int safe_number_of_workshops = 0;
+                    int safe_number_of_workshops_in_work = 0;
+
+                    std::cout << "Enter name of CS\n";
+                    clearInputBuffer();
+                    std::getline(std::cin, safe_name);
+
+                    std::cout << "Enter number of workshops:\n";
+                    if (!isValidInt(safe_number_of_workshops)) {
+                        type_error = true;
+                    }
+
+                    if (!type_error) {
+                        std::cout << "Enter number of workshops in work:\n";
+                        if (!isValidInt(safe_number_of_workshops_in_work)) {
+                            type_error = true;
+                        }
+                        else if (safe_number_of_workshops_in_work > safe_number_of_workshops) {
+                            std::cout << "Invalid input! number of workshops in work can`t be over than number of workshops\n\n";
+                            type_error = true;
+                        }
+                    }
+
+                    if (!type_error) {
+                        c.name = safe_name;
+                        c.number_of_workshops = safe_number_of_workshops;
+                        c.number_of_workshops_in_work = safe_number_of_workshops_in_work;
+                        std::cout << "CS created successfully!\n\n";
+                    }
+                    break;
+                }
+
+                case 3:
+
+                    break;
+                case 4:
+                    if (object_exist(p.name)) {
+                        std::cout << "select the operating mode of the pipe\n"
+                            << "1. Repair ON\n"
+                            << "2. Repair OFF\n";
+                        int op_mode_pipe;
+                        std::cin >> op_mode_pipe;
+                        p.switch_status(op_mode_pipe);
+                    }
+                    else {
+                        std::cout << "Pipe is not exist! Do it first.\n\n";
+                    }
+                    break;
+                case 5:
+
+                    break;
+                case 6:
+
+                    break;
+                case 7:
+
+                    break;
+                case 0:
+                    return;
+                }
             }
             else {
-                safe_number_of_workshops = value;
+                std::cout << "Number must be between 0 and 7. Try again.\n\n";
             }
-
-            if (!type_error) {
-                std::cout << "Enter number of workshops in work:\n";
-                std::string input;
-                std::getline(std::cin, input);
-                std::stringstream ss(input);
-                int value;
-
-                if (!(ss >> value) || !ss.eof() || value <= 0) {
-                    std::cout << "Invalid input! Please enter an integer over 0 (without decimal point).\n\n";
-                    type_error = true;
-                }
-                if (value > safe_number_of_workshops) {
-                    std::cout << "Invalid input! number of workshops in work can`t be over than number of workshops\n\n";
-                    type_error = true;
-                }
-                else {
-                    safe_number_of_workshops_in_work = value;
-                }
-            }
-
-            if (!type_error) {
-                c.name = safe_name;
-                c.number_of_workshops = safe_number_of_workshops;
-                c.number_of_workshops_in_work = safe_number_of_workshops_in_work;
-                std::cout << "CS created successfully!\n\n";
-            }
-            clearInputBuffer();
-
-            break;
+        }
+        catch (const std::exception&) {
+            std::cout << "Invalid input! Please enter a number.\n\n";
         }
 
-        case 3:
-            
-            break;
-        case 4:
-            if (object_exist(p.name)) {
-                std::cout << "select the operating mode of the pipe\n"
-                    << "1. Repair ON\n"
-                    << "2. Repair OFF\n";
-                int op_mode_pipe;
-                std::cin >> op_mode_pipe;
-                p.switch_status(op_mode_pipe);
-            }
-            else {
-                std::cout << "Pipe is not exist! Do it first.\n\n";
-            }
-            break;
-        case 5:
-
-            break;
-        case 6:
-
-            break;
-        case 7:
-
-            break;
-        case 0:
-            return;
-        }
+        
     }
 }
 
