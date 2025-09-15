@@ -14,12 +14,14 @@ struct Pipe {
     bool switch_status(int o) {
         if (o == 1) {
             status = true;
+            std::cout << "Successfully!\n";
             std::cout << "Status: Under renovation\n\n";
             return status;
         }
         else {
             if (o == 2) {
                 status = false;
+                std::cout << "Successfully!\n";
                 std::cout << "Status: normal\n\n";
                 return status;
             }
@@ -37,6 +39,23 @@ struct CompressStation {
     int number_of_workshops = 0;
     int number_of_workshops_in_work = 0;
     std::string class_cs = "0";
+
+    bool change_number_of_workshops_in_work(int number) {
+        if ( number > number_of_workshops) {
+            std::cout << "Invalid input! number of workshops in work can`t be over than number of workshops\n";
+            std::cout << "number is not changed\n\n";
+            return false;
+        }
+        else if (number < 0) {
+            std::cout << "Invalid input! Please enter an integer over 0 (without decimal point).\n";
+            std::cout << "number is not changed\n\n";
+            return false;
+        }
+        else { 
+            number_of_workshops_in_work = number;
+            return true; 
+        }
+    }
 };
 
 bool object_exist(std::string object) {
@@ -82,14 +101,16 @@ bool isValidFloat(const std::string& input) {
     return has_digit;
 }
 
-bool isValidInt(int& result) {
+bool isValidInt(int& result, bool comment=true, bool zero=false) {
     std::string input;
     std::getline(std::cin, input);
     std::stringstream ss(input);
     int value;
 
-    if (!(ss >> value) || !ss.eof() || value <= 0) {
-        std::cout << "Invalid input! Please enter an integer over 0 (without decimal point).\n\n";
+    if (!(ss >> value) || !ss.eof() || (value == 0 && !zero) || value < 0) {
+        if (comment) {
+            std::cout << "Invalid input! Please enter an positive integer (without decimal point).\n\n";
+        }
         return false;
     }
     else {
@@ -247,15 +268,32 @@ void show_menu(Pipe& p, CompressStation& c) {
                             << "1. Repair ON\n"
                             << "2. Repair OFF\n";
                         int op_mode_pipe;
-                        std::cin >> op_mode_pipe;
-                        p.switch_status(op_mode_pipe);
+                        if (!isValidInt(op_mode_pipe, false)) {
+                            std::cout << "Input error, please enter integer\n\n";
+                        }
+                        else p.switch_status(op_mode_pipe);                        
                     }
                     else {
                         std::cout << "Pipe is not exist! Do it first.\n\n";
                     }
                     break;
-                case 5:
 
+                case 5:
+                    if (object_exist(c.name)) {
+                        std::cout << "_____number of workshops in work now is - " << c.number_of_workshops_in_work << "_____\n";
+                        std::cout << "Keep track of how many workstations should be in operation:\n";                        
+                        int CS_ws_change;
+                        if (!isValidInt(CS_ws_change, true, true)) {
+                            break;
+                        }
+                        else if (c.change_number_of_workshops_in_work(CS_ws_change)) {
+                            std::cout << "Successfully\n";
+                            std::cout << "_____number of workshops in work now is - " << c.number_of_workshops_in_work << "_____\n\n";
+                        }
+                    }
+                    else {
+                        std::cout << "CS is not exist! Do it first.\n\n";
+                    }
                     break;
                 case 6:
 
@@ -273,9 +311,9 @@ void show_menu(Pipe& p, CompressStation& c) {
         }
         catch (const std::exception&) {
             std::cout << "Invalid input! Please enter a number.\n\n";
+            clearInputBuffer;
+            continue;            
         }
-
-        
     }
 }
 
