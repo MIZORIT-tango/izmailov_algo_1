@@ -119,7 +119,7 @@ bool isValidInt(int& result, bool comment=true, bool zero=false) {
     }
 }
 
-std::string trim(const std::string& str) {
+std::string trim(const std::string& str, bool isalnum=false) {
     if (str.empty()) return "error_input";
 
     size_t start = str.find_first_not_of(" \t\n\r\f\v");
@@ -129,20 +129,22 @@ std::string trim(const std::string& str) {
         return "error_input";
     }
 
-    bool has_alnum = false;
-    for (size_t i = start; i <= end; i++) {
-        if (std::isalnum(static_cast<unsigned char>(str[i]))) {
-            has_alnum = true;
-            break;
+    if (!isalnum) {
+        bool has_alnum = false;
+        for (size_t i = start; i <= end; i++) {
+            if (std::isalnum(static_cast<unsigned char>(str[i]))) {
+                has_alnum = true;
+                break;
+            }
         }
-
-    }    
-    if (has_alnum) {
-        return str.substr(start, end - start + 1);
+        if (has_alnum) {
+            return str.substr(start, end - start + 1);
+        }
+        else {
+            return "error_input";
+        }
     }
-    else {
-        return "error_input";
-    }
+     return str.substr(start, end - start + 1);
 }
 
 void show_menu(Pipe& p, CompressStation& c) {
@@ -221,6 +223,7 @@ void show_menu(Pipe& p, CompressStation& c) {
                     bool type_error = false;
 
                     std::string safe_name;
+                    std::string safe_class;
                     int safe_number_of_workshops = 0;
                     int safe_number_of_workshops_in_work = 0;
 
@@ -251,17 +254,49 @@ void show_menu(Pipe& p, CompressStation& c) {
                     }
 
                     if (!type_error) {
+                        std::cout << "Enter Class of workshops:\n";
+                        std::getline(std::cin, safe_class);
+                        safe_class = trim(safe_class, true);
+                        if (safe_class == "error_input") {
+                            std::cout << "Invalid input! The class can`t be empty.\n\n";
+                            type_error = true;
+                        }
+                        }                    
+
+                    if (!type_error) {
                         c.name = safe_name;
                         c.number_of_workshops = safe_number_of_workshops;
                         c.number_of_workshops_in_work = safe_number_of_workshops_in_work;
+                        c.class_cs = safe_class;
                         std::cout << "CS created successfully!\n\n";
                     }
                     break;
                 }
 
                 case 3:
+                    if (object_exist(p.name)) {
+                        std::cout << "INFO of pipe:\n";
+                        std::cout << "Name: " << p.name << "\n";
+                        std::cout << "length: " << p.length << "\n";
+                        std::cout << "diameter: " << p.diameter << "\n";
+                        std::cout << "Under renovation: " << p.status << "\n\n";
+                    }
+                    else {
+                        std::cout << "Pipe is not exists\n\n";
+                    }
 
+                    if (object_exist(c.name)) {
+                        std::cout << "INFO of CS:\n";
+                        std::cout << "Name: " << c.name << "\n";
+                        std::cout << "Number of workshops: " << c.number_of_workshops << "\n";
+                        std::cout << "Number of workshops in work: " << c.number_of_workshops_in_work << "\n";
+                        std::cout << "Class: " << c.class_cs << "\n\n";
+                    }
+                    else {
+                        std::cout << "CS is not exists\n\n";
+                    }
                     break;
+
                 case 4:
                     if (object_exist(p.name)) {
                         std::cout << "select the operating mode of the pipe\n"
@@ -323,7 +358,5 @@ int main()
     Pipe my_pipe;
     CompressStation CS;
     std::cout << "Welcome to the application 'basic essences of pipeline transportation of gas or oil'\n";
-    show_menu(my_pipe, CS);
-    
+    show_menu(my_pipe, CS);  
 }
-
