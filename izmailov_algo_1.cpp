@@ -279,7 +279,12 @@ void show_menu(Pipe& p, CompressStation& c) {
                         std::cout << "Name: " << p.name << "\n";
                         std::cout << "length: " << p.length << "\n";
                         std::cout << "diameter: " << p.diameter << "\n";
-                        std::cout << "Under renovation: " << p.status << "\n\n";
+                        if (p.status) {
+                            std::cout << "Under renovation " << "\n\n";
+                        }
+                        else {
+                            std::cout << "Working " << "\n\n";
+                        }
                     }
                     else {
                         std::cout << "Pipe is not exists\n\n";
