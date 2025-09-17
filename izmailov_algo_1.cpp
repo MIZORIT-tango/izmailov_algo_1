@@ -4,6 +4,7 @@
 #include <sstream>
 #include <regex>
 #include <cctype>
+#include <fstream>
 
 struct Pipe {
     std::string name= "0";
@@ -145,6 +146,147 @@ std::string trim(const std::string& str, bool isalnum=false) {
         }
     }
      return str.substr(start, end - start + 1);
+}
+
+void saveData(const std::string& fileName, const Pipe& p, const CompressStation& c) {
+    std::ofstream file(fileName);
+
+    if (file.is_open()) {
+        if (object_exist(p.name)) {
+            file << "<PIPE>\n";
+            file << p.name << "\n";
+            file << p.length << "\n";
+            file << p.diameter << "\n";
+            file << p.status << "\n";
+            file << "</PIPE>\n\n";
+        }
+        else {
+            std::cout << "Pipe is not exist, not saved\n\n";
+        }
+        if (object_exist(c.name)) {
+            file << "<CS>\n";
+            file << c.name << "\n";
+            file << c.number_of_workshops << "\n";
+            file << c.number_of_workshops_in_work << "\n";
+            file << c.class_cs << "\n";
+            file << "</CS>\n\n";
+        }
+        else {
+            std::cout << "CS is not exist, not saved\n\n";
+        }
+        file.close();
+        std::cout << "Data saved to " << fileName << "\n" << std::endl;
+    }
+    else {
+        std::cout << "Error save. File is not found.";
+    }
+}
+
+void loadData(const std::string& filename, Pipe& p, CompressStation& c) {
+    std::ifstream file(filename);
+
+    if (!file.is_open()) {
+        std::cout << "Error opening file for reading!" << std::endl << "\n\n";
+        return;
+    }
+
+    std::string line;
+    bool reading_pipe = false;
+    bool reading_cs = false;
+    int line_counter = 0;
+
+    try {
+        while (std::getline(file, line)) {
+            line.erase(0, line.find_first_not_of(" \t\n\r\f\v"));
+            line.erase(line.find_last_not_of(" \t\n\r\f\v") + 1);
+
+            if (line.empty()) {
+                continue;
+            }
+            
+            if (line == "<PIPE>") {
+                if (reading_pipe || reading_cs) {
+                    throw std::runtime_error("Nested tags found");
+                }
+                reading_pipe = true;
+                line_counter = 0;
+                continue;
+            }
+            else if (line == "</PIPE>") {
+                if (!reading_pipe) {
+                    throw std::runtime_error("Unexpected closing tag </PIPE>");
+                }
+                if (line_counter != 4) {
+                    throw std::runtime_error("Incomplete PIPE data");
+                }
+                reading_pipe = false;
+                line_counter = 0;
+                continue;
+            }
+            else if (line == "<CS>") {
+                if (reading_pipe || reading_cs) {
+                    throw std::runtime_error("Nested tags found");
+                }
+                reading_cs = true;
+                line_counter = 0;
+                continue;
+            }
+            else if (line == "</CS>") {
+                if (!reading_cs) {
+                    throw std::runtime_error("Unexpected closing tag </CS>");
+                }
+                if (line_counter != 4) {
+                    throw std::runtime_error("Incomplete CS data");
+                }
+                reading_cs = false;
+                line_counter = 0;
+                continue;
+            }
+
+            if (reading_pipe) {
+                switch (line_counter) {
+                case 0: p.name = line; break;
+                case 1: p.length = std::stof(line); break;
+                case 2: p.diameter = std::stoi(line); break;
+                case 3: p.status = (line == "1" || line == "true"); break;
+                default:
+                    throw std::runtime_error("Extra data in PIPE tag");
+                }
+                line_counter++;
+            }
+            else if (reading_cs) {
+                switch (line_counter) {
+                case 0: c.name = line; break;
+                case 1: c.number_of_workshops = std::stoi(line); break;
+                case 2: c.number_of_workshops_in_work = std::stoi(line); break;
+                case 3: c.class_cs = line; break;
+                default:
+                    throw std::runtime_error("Extra data in CS tag");
+                }
+                line_counter++;
+            }
+            else {
+                throw std::runtime_error("Data outside of tags: " + line);
+            }
+        }
+
+        if (reading_pipe) {
+            throw std::runtime_error("Unclosed <PIPE> tag");
+        }
+        if (reading_cs) {
+            throw std::runtime_error("Unclosed <CS> tag");
+        }
+
+        std::cout << "Data loaded successfully from " << filename << "\n" << std::endl;
+
+    }
+    catch (const std::exception& e) {
+        std::cout << "Error reading file: " << e.what() << "\n" << std::endl;
+        p = Pipe();
+        c = CompressStation();
+    }
+
+    file.close();
 }
 
 void show_menu(Pipe& p, CompressStation& c) {
@@ -336,11 +478,47 @@ void show_menu(Pipe& p, CompressStation& c) {
                     }
                     break;
                 case 6:
+                    std::cout << "Are you sure? The file will be permanently replaced.\n";
+                    std::cout << "choice: Y/N  (Yes/Not)\n";
 
+                    char choice;
+                    std::cin >> choice;
+                    choice = tolower(choice);
+
+                    if (choice == 'yes' || choice == 'y') {
+                        saveData("data_file.txt", p, c);
+                        std::cout << "Saving completed\n\n";
+                    }
+                    else if (choice == 'not' || choice == 'n') {
+                        std::cout << "\n\n";
+                    }
+                    else {
+                        std::cout << "Error input" << std::endl;
+                        clearInputBuffer();
+                    }
                     break;
+
                 case 7:
+                    std::cout << "Are you sure? The original data will be delete.\n";
+                    std::cout << "choice: Y/N  (Yes/Not)\n";
 
+                    char choice;
+                    std::cin >> choice;
+                    choice = tolower(choice);
+
+                    if (choice == 'yes' || choice == 'y') {
+                        loadData("data_file.txt", p, c);
+                        std::cout << "Load completed\n\n";
+                    }
+                    else if (choice == 'not' || choice == 'n') {
+                        std::cout << "\n\n";
+                    }
+                    else {
+                        std::cout << "Error input" << std::endl;
+                        clearInputBuffer();
+                    }
                     break;
+
                 case 0:
                     return;
                 }
