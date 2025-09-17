@@ -481,42 +481,42 @@ void show_menu(Pipe& p, CompressStation& c) {
                     std::cout << "Are you sure? The file will be permanently replaced.\n";
                     std::cout << "choice: Y/N  (Yes/Not)\n";
 
-                    char choice;
-                    std::cin >> choice;
-                    choice = tolower(choice);
+                    char s_choice;
+                    std::cin >> s_choice;
+                    s_choice = tolower(s_choice);
 
-                    if (choice == 'yes' || choice == 'y') {
+                    if (s_choice == 'y') {
                         saveData("data_file.txt", p, c);
                         std::cout << "Saving completed\n\n";
                     }
-                    else if (choice == 'not' || choice == 'n') {
+                    else if (s_choice == 'n') {
                         std::cout << "\n\n";
                     }
                     else {
-                        std::cout << "Error input" << std::endl;
-                        clearInputBuffer();
+                        std::cout << "Error input\n\n" << std::endl;                        
                     }
+                    clearInputBuffer();
                     break;
 
                 case 7:
                     std::cout << "Are you sure? The original data will be delete.\n";
                     std::cout << "choice: Y/N  (Yes/Not)\n";
 
-                    char choice;
-                    std::cin >> choice;
-                    choice = tolower(choice);
+                    char l_choice;
+                    std::cin >> l_choice;
+                    l_choice = tolower(l_choice);
 
-                    if (choice == 'yes' || choice == 'y') {
+                    if (l_choice == 'y') {
                         loadData("data_file.txt", p, c);
                         std::cout << "Load completed\n\n";
                     }
-                    else if (choice == 'not' || choice == 'n') {
-                        std::cout << "\n\n";
+                    else if (l_choice == 'n') {
+                        std::cout << "\n";
                     }
                     else {
-                        std::cout << "Error input" << std::endl;
-                        clearInputBuffer();
+                        std::cout << "Error input\n\n" << std::endl;                        
                     }
+                    clearInputBuffer();
                     break;
 
                 case 0:
@@ -529,7 +529,6 @@ void show_menu(Pipe& p, CompressStation& c) {
         }
         catch (const std::exception&) {
             std::cout << "Invalid input! Please enter a number.\n\n";
-            clearInputBuffer;
             continue;            
         }
     }
