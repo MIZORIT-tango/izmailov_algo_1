@@ -1,22 +1,40 @@
 #include "logger.h"
+#include <chrono>
+#include <iomanip>
 
 Logger::Logger(const std::string& filename) {
     logFile.open(filename, std::ios::app);
     if (logFile.is_open()) {
-        std::time_t now = std::time(nullptr);
-        std::string timestamp = std::ctime(&now);
-        timestamp.pop_back();
-        logFile << "=== Session started: " << timestamp << " ===\n";
+        auto now = std::chrono::system_clock::now();
+        auto time_t = std::chrono::system_clock::to_time_t(now);
+
+        char timestamp[26];
+        ctime_s(timestamp, sizeof(timestamp), &time_t);
+
+        std::string timeStr(timestamp);
+        if (!timeStr.empty() && timeStr.back() == '\n') {
+            timeStr.pop_back();
+        }
+
+        logFile << "=== Session started: " << timeStr << " ===\n";
         logFile.flush();
     }
 }
 
 Logger::~Logger() {
     if (logFile.is_open()) {
-        std::time_t now = std::time(nullptr);
-        std::string timestamp = std::ctime(&now);
-        timestamp.pop_back();
-        logFile << "=== Session ended: " << timestamp << " ===\n\n";
+        auto now = std::chrono::system_clock::now();
+        auto time_t = std::chrono::system_clock::to_time_t(now);
+
+        char timestamp[26];
+        ctime_s(timestamp, sizeof(timestamp), &time_t);
+
+        std::string timeStr(timestamp);
+        if (!timeStr.empty() && timeStr.back() == '\n') {
+            timeStr.pop_back();
+        }
+
+        logFile << "=== Session ended: " << timeStr << " ===\n\n";
         logFile.close();
     }
 }
