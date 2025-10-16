@@ -125,11 +125,15 @@
   <ItemGroup>
     <ClCompile Include="CompressStation.cpp" />
     <ClCompile Include="izmailov_algo_1.cpp" />
+    <ClCompile Include="logger.cpp" />
+    <ClCompile Include="operations.cpp" />
     <ClCompile Include="Pipe.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CompressStation.h" />
+    <ClInclude Include="logger.h" />
+    <ClInclude Include="operations.h" />
     <ClInclude Include="Pipe.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
