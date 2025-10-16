@@ -5,6 +5,7 @@
 #include <regex>
 #include <cctype>
 #include <fstream>
+#include <map>
 
 struct Pipe {
     std::string name= "0";
@@ -58,7 +59,7 @@ struct CompressStation {
         }
     }
 };
-
+ 
 bool object_exist(std::string object) {
     if (object == "0") {
         return false;
@@ -289,8 +290,8 @@ void loadData(const std::string& filename, Pipe& p, CompressStation& c) {
     file.close();
 }
 
-void show_menu(Pipe& p, CompressStation& c) {
-    int menu_choose;
+void show_menu(Pipe p, CompressStation c) {
+    int menu_choose; 
     while (true) {
         std::cout << "Select an action: (write number))\n"
             << "1. Add pipe\n"
@@ -539,6 +540,8 @@ int main()
 {
     Pipe my_pipe;
     CompressStation CS;
+    std::map<int, Pipe> pipes_massive;
+    std::map<int, CompressStation> cs_massive;
     std::cout << "Welcome to the application 'basic essences of pipeline transportation of gas or oil'\n";
     show_menu(my_pipe, CS);  
 }

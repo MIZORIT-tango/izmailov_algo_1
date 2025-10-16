@@ -1,14 +1,14 @@
 <PIPE>
-my pipe
-13.5
-3
+tr 1
+1200
+500
 1
 </PIPE>
 
 <CS>
-my CS
-10
-0
---2Vd
+cs 1
+12
+12
+a
 </CS>
 
