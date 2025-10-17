@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "globals.h"
 
 
 template<>
@@ -23,26 +24,14 @@ std::string trim(const std::string& str) {
     return str.substr(start, end - start + 1);
 }
 
-int getNextPipeId(const std::map<int, Pipe>& pipes) {
-    if (pipes.empty()) return 1;
-
-    int maxId = 0;
-    for (const auto& pair : pipes) {
-        if (pair.first > maxId) {
-            maxId = pair.first;
-        }
-    }
-    return maxId + 1;
+int getNextPipeId() {
+    int currentId = g_nextPipeId;
+    g_nextPipeId++;
+    return currentId;
 }
 
-int getNextStationId(const std::map<int, CompressStation>& stations) {
-    if (stations.empty()) return 1;
-
-    int maxId = 0;
-    for (const auto& pair : stations) {
-        if (pair.first > maxId) {
-            maxId = pair.first;
-        }
-    }
-    return maxId + 1;
+int getNextStationId() {
+    int currentId = g_nextStationId;
+    g_nextStationId++;
+    return currentId;
 }

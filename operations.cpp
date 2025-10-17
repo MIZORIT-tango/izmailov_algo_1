@@ -30,7 +30,7 @@ void addPipe(std::map<int, Pipe>& pipes, Logger& logger) {
     }
     logger.logUserInput(std::to_string(diameter));
 
-    int nextId = getNextPipeId(pipes);
+    int nextId = getNextPipeId();
     Pipe newPipe(nextId, name, length, diameter);
     pipes[newPipe.getId()] = newPipe;
     std::cout << "Pipe created successfully! ID: " << newPipe.getId() << "\n\n";
@@ -79,7 +79,7 @@ void addCompressStation(std::map<int, CompressStation>& stations, Logger& logger
     }
     logger.logUserInput(class_cs);
 
-    int nextId = getNextStationId(stations);
+    int nextId = getNextStationId();
     CompressStation newCS(nextId, name, workshops, workshops_in_work, class_cs);
     stations[newCS.getId()] = newCS;
     std::cout << "CS created successfully! ID: " << newCS.getId() << "\n\n";

@@ -6,6 +6,7 @@
 #include "utils.h"
 #include "file_operations.h"
 #include "operations.h"
+#include "globals.h"
 
 void showMenu(std::map<int, Pipe>& pipes, std::map<int, CompressStation>& stations, Logger& logger) {
     int menu_choose;

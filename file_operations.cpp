@@ -1,22 +1,24 @@
 #include "file_operations.h"
-#include "utils.h"
 #include <fstream>
 #include <iostream>
-
+#include "globals.h"
 
 void saveData(const std::string& filename, const std::map<int, Pipe>& pipes,
     const std::map<int, CompressStation>& stations, Logger& logger) {
     std::ofstream file(filename);
 
     if (file.is_open()) {
-        // Сохраняем трубы с тегами
+        file << COUNTERS_TAG << "\n";
+        file << g_nextPipeId << "\n";
+        file << g_nextStationId << "\n";
+        file << COUNTERS_END_TAG << "\n\n";
+
         for (const auto& pair : pipes) {
             file << PIPE_START_TAG << "\n";
             file << pair.second;
             file << PIPE_END_TAG << "\n\n";
         }
 
-        // Сохраняем КС с тегами
         for (const auto& pair : stations) {
             file << STATION_START_TAG << "\n";
             file << pair.second;
@@ -48,15 +50,27 @@ void loadData(const std::string& filename, std::map<int, Pipe>& pipes,
     stations.clear();
 
     std::string line;
+    bool counters_loaded = false;
 
     try {
         while (std::getline(file, line)) {
-            line = trim(line);
+            size_t start = line.find_first_not_of(" \t\n\r\f\v");
+            if (start == std::string::npos) continue;
+            size_t end = line.find_last_not_of(" \t\n\r\f\v");
+            line = line.substr(start, end - start + 1);
 
             if (line.empty()) continue;
 
-            if (line == PIPE_START_TAG) {
-                // Читаем данные трубы
+            if (line == COUNTERS_TAG && !counters_loaded) {
+                file >> g_nextPipeId;
+                file >> g_nextStationId;
+                counters_loaded = true;
+
+                std::getline(file, line);
+                std::getline(file, line);
+                continue;
+            }
+            else if (line == PIPE_START_TAG) {
                 int id;
                 std::string name;
                 float length;
@@ -79,7 +93,6 @@ void loadData(const std::string& filename, std::map<int, Pipe>& pipes,
                 std::getline(file, line);
             }
             else if (line == STATION_START_TAG) {
-                // Читаем данные КС
                 int id;
                 std::string name;
                 int workshops, workshops_in_work;
@@ -99,6 +112,23 @@ void loadData(const std::string& filename, std::map<int, Pipe>& pipes,
             }
         }
 
+        if (!counters_loaded) {
+            g_nextPipeId = 1;
+            g_nextStationId = 1;
+
+            for (const auto& pair : pipes) {
+                if (pair.first >= g_nextPipeId) {
+                    g_nextPipeId = pair.first + 1;
+                }
+            }
+
+            for (const auto& pair : stations) {
+                if (pair.first >= g_nextStationId) {
+                    g_nextStationId = pair.first + 1;
+                }
+            }
+        }
+
         std::cout << "Data loaded successfully from " << filename << "\n\n";
         logger.logCommand("DATA_LOADED: pipes=" + std::to_string(pipes.size()) +
             ", stations=" + std::to_string(stations.size()));
@@ -109,6 +139,9 @@ void loadData(const std::string& filename, std::map<int, Pipe>& pipes,
         logger.logCommand("LOAD_ERROR: " + std::string(e.what()));
         pipes.clear();
         stations.clear();
+
+        g_nextPipeId = 1;
+        g_nextStationId = 1;
     }
 
     file.close();

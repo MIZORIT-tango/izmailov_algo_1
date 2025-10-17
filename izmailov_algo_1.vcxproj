@@ -125,6 +125,7 @@
   <ItemGroup>
     <ClCompile Include="CompressStation.cpp" />
     <ClCompile Include="file_operations.cpp" />
+    <ClCompile Include="globals.cpp" />
     <ClCompile Include="izmailov_algo_1.cpp" />
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="operations.cpp" />
@@ -134,6 +135,7 @@
   <ItemGroup>
     <ClInclude Include="CompressStation.h" />
     <ClInclude Include="file_operations.h" />
+    <ClInclude Include="globals.h" />
     <ClInclude Include="logger.h" />
     <ClInclude Include="operations.h" />
     <ClInclude Include="Pipe.h" />

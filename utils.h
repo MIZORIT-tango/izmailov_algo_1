@@ -8,6 +8,7 @@
 #include <map>
 #include "pipe.h"
 #include "CompressStation.h"
+#include "globals.h"
 
 
 template<typename T>
@@ -38,7 +39,7 @@ bool isValidInput<std::string>(std::string& result, const std::string& prompt, b
 void clearInputBuffer();
 std::string trim(const std::string& str);
 
-int getNextPipeId(const std::map<int, Pipe>& pipes);
-int getNextStationId(const std::map<int, CompressStation>& stations);
+int getNextPipeId();
+int getNextStationId();
 
 #endif
