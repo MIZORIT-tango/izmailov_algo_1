@@ -1,31 +1,26 @@
 #include "operations.h"
 #include <algorithm>
+#include <iostream>
 
 void addPipe(std::map<int, Pipe>& pipes, Logger& logger) {
     std::string name;
     float length;
     int diameter;
 
-    logger.logCommand("PIPE_NAME_INPUT");
     if (!isValidInput(name, "Enter name of pipe:\n")) {
         std::cout << "Invalid name!\n\n";
-        logger.logUserInput("INVALID_NAME");
         return;
     }
     logger.logUserInput(name);
 
-    logger.logCommand("PIPE_LENGTH_INPUT");
-    if (!isValidInput(length, "Enter length of pipe:\n") or length<=0) {
+    if (!isValidInput(length, "Enter length of pipe:\n") || length <= 0) {
         std::cout << "Invalid length!\n\n";
-        logger.logUserInput("INVALID_LENGTH");
         return;
     }
     logger.logUserInput(std::to_string(length));
 
-    logger.logCommand("PIPE_DIAMETER_INPUT");
-    if (!isValidInput(diameter, "Enter diameter of pipe:\n") or diameter<=0) {
+    if (!isValidInput(diameter, "Enter diameter of pipe:\n") || diameter <= 0) {
         std::cout << "Invalid diameter!\n\n";
-        logger.logUserInput("INVALID_DIAMETER");
         return;
     }
     logger.logUserInput(std::to_string(diameter));
@@ -34,47 +29,37 @@ void addPipe(std::map<int, Pipe>& pipes, Logger& logger) {
     Pipe newPipe(nextId, name, length, diameter);
     pipes[newPipe.getId()] = newPipe;
     std::cout << "Pipe created successfully! ID: " << newPipe.getId() << "\n\n";
-    logger.logCommand("PIPE_CREATED: ID=" + std::to_string(newPipe.getId()));
 }
 
 void addCompressStation(std::map<int, CompressStation>& stations, Logger& logger) {
     std::string name, class_cs;
     int workshops, workshops_in_work;
 
-    logger.logCommand("CS_NAME_INPUT");
     if (!isValidInput(name, "Enter name of CS:\n")) {
         std::cout << "Invalid name!\n\n";
-        logger.logUserInput("INVALID_NAME");
         return;
     }
     logger.logUserInput(name);
 
-    logger.logCommand("CS_WORKSHOPS_INPUT");
-    if (!isValidInput(workshops, "Enter number of workshops:\n") or workshops<=0) {
+    if (!isValidInput(workshops, "Enter number of workshops:\n") || workshops <= 0) {
         std::cout << "Invalid number!\n\n";
-        logger.logUserInput("INVALID_WORKSHOPS");
         return;
     }
     logger.logUserInput(std::to_string(workshops));
 
-    logger.logCommand("CS_WORKSHOPS_IN_WORK_INPUT");
     if (!isValidInput(workshops_in_work, "Enter number of workshops in work:\n")) {
         std::cout << "Invalid number!\n\n";
-        logger.logUserInput("INVALID_WORKSHOPS_IN_WORK");
         return;
     }
     logger.logUserInput(std::to_string(workshops_in_work));
 
     if (workshops_in_work > workshops || workshops_in_work < 0) {
         std::cout << "Invalid number of workshops in work!\n\n";
-        logger.logUserInput("INVALID_WORKSHOPS_COUNT");
         return;
     }
 
-    logger.logCommand("CS_CLASS_INPUT");
     if (!isValidInput(class_cs, "Enter class of CS:\n")) {
         std::cout << "Invalid class!\n\n";
-        logger.logUserInput("INVALID_CLASS");
         return;
     }
     logger.logUserInput(class_cs);
@@ -83,7 +68,6 @@ void addCompressStation(std::map<int, CompressStation>& stations, Logger& logger
     CompressStation newCS(nextId, name, workshops, workshops_in_work, class_cs);
     stations[newCS.getId()] = newCS;
     std::cout << "CS created successfully! ID: " << newCS.getId() << "\n\n";
-    logger.logCommand("CS_CREATED: ID=" + std::to_string(newCS.getId()));
 }
 
 void viewAllObjects(const std::map<int, Pipe>& pipes, const std::map<int, CompressStation>& stations) {
@@ -137,7 +121,6 @@ std::vector<int> findPipesById(const std::map<int, Pipe>& pipes, int id) {
     return result;
 }
 
-
 std::vector<int> findStationsByName(const std::map<int, CompressStation>& stations, const std::string& name) {
     std::vector<int> result;
     for (const auto& pair : stations) {
@@ -167,26 +150,21 @@ std::vector<int> findStationsById(const std::map<int, CompressStation>& stations
     return result;
 }
 
-
 void editPipe(std::map<int, Pipe>& pipes, Logger& logger) {
     if (pipes.empty()) {
         std::cout << "No pipes available to edit.\n\n";
-        logger.logCommand("EDIT_PIPE_NO_PIPES");
         return;
     }
 
-    logger.logCommand("EDIT_PIPE_ID_INPUT");
     int pipeId;
     if (!isValidInput(pipeId, "Enter pipe ID to edit: ")) {
         std::cout << "Invalid ID!\n\n";
-        logger.logUserInput("INVALID_PIPE_ID");
         return;
     }
     logger.logUserInput(std::to_string(pipeId));
 
     if (pipes.find(pipeId) == pipes.end()) {
         std::cout << "Pipe with ID " << pipeId << " not found.\n\n";
-        logger.logCommand("PIPE_NOT_FOUND: ID=" + std::to_string(pipeId));
         return;
     }
 
@@ -204,76 +182,58 @@ void editPipe(std::map<int, Pipe>& pipes, Logger& logger) {
         std::cout << "4. Repair status (current: " << (pipe.getStatus() ? "Under renovation" : "Working") << ")\n";
         std::cout << "0. Finish editing\n";
 
-        logger.logCommand("EDIT_PIPE_FIELD_CHOICE");
         if (!isValidInput(fieldChoice, "Enter your choice: ")) {
             std::cout << "Invalid choice!\n\n";
-            logger.logUserInput("INVALID_FIELD_CHOICE");
             continue;
         }
         logger.logUserInput(std::to_string(fieldChoice));
 
         switch (fieldChoice) {
         case 1: {
-            // Редактирование имени
-            logger.logCommand("EDIT_PIPE_NEW_NAME");
             std::string newName;
             if (!isValidInput(newName, "Enter new name: ")) {
                 std::cout << "Invalid name!\n\n";
-                logger.logUserInput("INVALID_NEW_NAME");
                 break;
             }
             pipe.setName(newName);
             logger.logUserInput(newName);
             std::cout << "Name updated successfully!\n\n";
-            logger.logCommand("PIPE_NAME_UPDATED: ID=" + std::to_string(pipeId));
             break;
         }
 
         case 2: {
-            // Редактирование длины
-            logger.logCommand("EDIT_PIPE_NEW_LENGTH");
             float newLength;
             if (!isValidInput(newLength, "Enter new length: ")) {
                 std::cout << "Invalid length!\n\n";
-                logger.logUserInput("INVALID_NEW_LENGTH");
                 break;
             }
             if (newLength <= 0) {
                 std::cout << "Length must be positive!\n\n";
-                logger.logUserInput("INVALID_LENGTH_VALUE");
                 break;
             }
             pipe.setLength(newLength);
             logger.logUserInput(std::to_string(newLength));
             std::cout << "Length updated successfully!\n\n";
-            logger.logCommand("PIPE_LENGTH_UPDATED: ID=" + std::to_string(pipeId));
             break;
         }
 
         case 3: {
-            // Редактирование диаметра
-            logger.logCommand("EDIT_PIPE_NEW_DIAMETER");
             int newDiameter;
             if (!isValidInput(newDiameter, "Enter new diameter: ")) {
                 std::cout << "Invalid diameter!\n\n";
-                logger.logUserInput("INVALID_NEW_DIAMETER");
                 break;
             }
             if (newDiameter <= 0) {
                 std::cout << "Diameter must be positive!\n\n";
-                logger.logUserInput("INVALID_DIAMETER_VALUE");
                 break;
             }
             pipe.setDiameter(newDiameter);
             logger.logUserInput(std::to_string(newDiameter));
             std::cout << "Diameter updated successfully!\n\n";
-            logger.logCommand("PIPE_DIAMETER_UPDATED: ID=" + std::to_string(pipeId));
             break;
         }
 
         case 4: {
-            // Редактирование статуса ремонта
-            logger.logCommand("EDIT_PIPE_NEW_STATUS");
             std::cout << "Current status: " << (pipe.getStatus() ? "UNDER RENOVATION" : "WORKING") << "\n";
             std::cout << "Select new repair status:\n";
             std::cout << "1. Put UNDER RENOVATION (repair ON)\n";
@@ -282,7 +242,6 @@ void editPipe(std::map<int, Pipe>& pipes, Logger& logger) {
             int statusChoice;
             if (!isValidInput(statusChoice, "Enter your choice: ")) {
                 std::cout << "Invalid choice!\n\n";
-                logger.logUserInput("INVALID_STATUS_CHOICE");
                 break;
             }
             logger.logUserInput(std::to_string(statusChoice));
@@ -301,25 +260,20 @@ void editPipe(std::map<int, Pipe>& pipes, Logger& logger) {
                 break;
             default:
                 std::cout << "Invalid choice!\n\n";
-                logger.logUserInput("INVALID_STATUS_VALUE");
                 return;
             }
 
             pipe.setStatus(newStatus);
             std::cout << "Repair status updated to: " << statusText << "\n\n";
-            logger.logCommand("PIPE_STATUS_UPDATED: ID=" + std::to_string(pipeId) +
-                ", status=" + statusText);
             break;
         }
 
         case 0:
-            logger.logCommand("EDIT_PIPE_FINISHED");
             std::cout << "Editing completed.\n\n";
             break;
 
         default:
             std::cout << "Invalid choice! Please enter 0-4.\n\n";
-            logger.logUserInput("INVALID_EDIT_CHOICE");
             break;
         }
     } while (fieldChoice != 0);
@@ -328,26 +282,22 @@ void editPipe(std::map<int, Pipe>& pipes, Logger& logger) {
 void editCompressStation(std::map<int, CompressStation>& stations, Logger& logger) {
     if (stations.empty()) {
         std::cout << "No compress stations available to edit.\n\n";
-        logger.logCommand("EDIT_CS_NO_STATIONS");
         return;
     }
 
-    logger.logCommand("EDIT_CS_ID_INPUT");
     int stationId;
     if (!isValidInput(stationId, "Enter CS ID to edit: ")) {
         std::cout << "Invalid ID!\n\n";
-        logger.logUserInput("INVALID_CS_ID");
         return;
     }
     logger.logUserInput(std::to_string(stationId));
 
     if (stations.find(stationId) == stations.end()) {
         std::cout << "CS with ID " << stationId << " not found.\n\n";
-        logger.logCommand("CS_NOT_FOUND: ID=" + std::to_string(stationId));
         return;
     }
 
-    CompressStation& station = stations[stationId]; 
+    CompressStation& station = stations[stationId];
 
     std::cout << "\nCurrent CS data:\n";
     station.displayInfo();
@@ -361,132 +311,103 @@ void editCompressStation(std::map<int, CompressStation>& stations, Logger& logge
         std::cout << "4. Class (current: " << station.getClass() << ")\n";
         std::cout << "0. Finish editing\n";
 
-        logger.logCommand("EDIT_CS_FIELD_CHOICE");
         if (!isValidInput(fieldChoice, "Enter your choice: ")) {
             std::cout << "Invalid choice!\n\n";
-            logger.logUserInput("INVALID_FIELD_CHOICE");
             continue;
         }
         logger.logUserInput(std::to_string(fieldChoice));
 
         switch (fieldChoice) {
         case 1: {
-            // Редактирование имени
-            logger.logCommand("EDIT_CS_NEW_NAME");
             std::string newName;
             if (!isValidInput(newName, "Enter new name: ")) {
                 std::cout << "Invalid name!\n\n";
-                logger.logUserInput("INVALID_NEW_NAME");
                 break;
             }
             station.setName(newName);
             logger.logUserInput(newName);
             std::cout << "Name updated successfully!\n\n";
-            logger.logCommand("CS_NAME_UPDATED: ID=" + std::to_string(stationId));
             break;
         }
 
         case 2: {
-            // Редактирование общего количества цехов
-            logger.logCommand("EDIT_CS_NEW_WORKSHOPS");
             int newWorkshops;
             if (!isValidInput(newWorkshops, "Enter new number of workshops: ")) {
                 std::cout << "Invalid number!\n\n";
-                logger.logUserInput("INVALID_NEW_WORKSHOPS");
                 break;
             }
             if (newWorkshops <= 0) {
                 std::cout << "Number of workshops must be positive!\n\n";
-                logger.logUserInput("INVALID_WORKSHOPS_VALUE");
                 break;
             }
 
-            // Проверяем чтобы работающих цехов не было больше нового общего количества
             if (station.getNumberOfWorkshopsInWork() > newWorkshops) {
                 std::cout << "Warning: Current number of workshops in work ("
                     << station.getNumberOfWorkshopsInWork()
                     << ") exceeds new total (" << newWorkshops
                     << "). Please update workshops in work first.\n\n";
-                logger.logCommand("WORKSHOPS_WARNING: in_work_exceeds_total");
                 break;
             }
 
             station.setNumberOfWorkshops(newWorkshops);
             logger.logUserInput(std::to_string(newWorkshops));
             std::cout << "Number of workshops updated successfully!\n\n";
-            logger.logCommand("CS_WORKSHOPS_UPDATED: ID=" + std::to_string(stationId));
             break;
         }
 
         case 3: {
-            // Редактирование количества работающих цехов
-            logger.logCommand("EDIT_CS_NEW_WORKSHOPS_IN_WORK");
             int newWorkshopsInWork;
             if (!isValidInput(newWorkshopsInWork, "Enter new number of workshops in work: ")) {
                 std::cout << "Invalid number!\n\n";
-                logger.logUserInput("INVALID_NEW_WORKSHOPS_IN_WORK");
                 break;
             }
 
-            // Проверяем чтобы работающих цехов не было больше общего количества
             if (newWorkshopsInWork > station.getNumberOfWorkshops()) {
                 std::cout << "Error: Number of workshops in work cannot exceed total number of workshops ("
                     << station.getNumberOfWorkshops() << ").\n\n";
-                logger.logUserInput("INVALID_WORKSHOPS_IN_WORK_COUNT");
                 break;
             }
 
             if (newWorkshopsInWork < 0) {
                 std::cout << "Error: Number of workshops in work cannot be negative.\n\n";
-                logger.logUserInput("INVALID_WORKSHOPS_IN_WORK_VALUE");
                 break;
             }
 
             station.setNumberOfWorkshopsInWork(newWorkshopsInWork);
             logger.logUserInput(std::to_string(newWorkshopsInWork));
             std::cout << "Number of workshops in work updated successfully!\n\n";
-            logger.logCommand("CS_WORKSHOPS_IN_WORK_UPDATED: ID=" + std::to_string(stationId));
             break;
         }
 
         case 4: {
-            // Редактирование класса
-            logger.logCommand("EDIT_CS_NEW_CLASS");
             std::string newClass;
             if (!isValidInput(newClass, "Enter new class: ")) {
                 std::cout << "Invalid class!\n\n";
-                logger.logUserInput("INVALID_NEW_CLASS");
                 break;
             }
             station.setClass(newClass);
             logger.logUserInput(newClass);
             std::cout << "Class updated successfully!\n\n";
-            logger.logCommand("CS_CLASS_UPDATED: ID=" + std::to_string(stationId));
             break;
         }
 
         case 0:
-            logger.logCommand("EDIT_CS_FINISHED");
             std::cout << "Editing completed.\n\n";
             break;
 
         default:
             std::cout << "Invalid choice! Please enter 0-4.\n\n";
-            logger.logUserInput("INVALID_EDIT_CHOICE");
             break;
         }
     } while (fieldChoice != 0);
 }
 
-
 void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger) {
     if (pipes.empty()) {
         std::cout << "No pipes available to edit.\n\n";
-        logger.logCommand("BATCH_EDIT_NO_PIPES");
         return;
     }
 
-    logger.logCommand("BATCH_EDIT_STARTED");
     std::cout << "Batch edit pipes - search pipes to edit:\n"
         << "1. By ID\n"
         << "2. By name\n"
@@ -495,7 +416,6 @@ void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger) {
     int searchChoice;
     if (!isValidInput(searchChoice, "Enter your choice: ")) {
         std::cout << "Invalid choice!\n\n";
-        logger.logUserInput("INVALID_BATCH_SEARCH_CHOICE");
         return;
     }
     logger.logUserInput(std::to_string(searchChoice));
@@ -503,36 +423,26 @@ void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger) {
     std::vector<int> foundPipes;
 
     if (searchChoice == 1) {
-        // Поиск по ID
-        logger.logCommand("BATCH_SEARCH_BY_ID");
         int searchId;
         if (!isValidInput(searchId, "Enter pipe ID to search: ")) {
             std::cout << "Invalid ID!\n\n";
-            logger.logUserInput("INVALID_SEARCH_ID");
             return;
         }
         logger.logUserInput(std::to_string(searchId));
         foundPipes = findPipesById(pipes, searchId);
-        logger.logCommand("BATCH_SEARCH_COMPLETED: by_id=" + std::to_string(searchId));
 
     }
     else if (searchChoice == 2) {
-        // Поиск по имени
-        logger.logCommand("BATCH_SEARCH_BY_NAME");
         std::string name;
         if (!isValidInput(name, "Enter name to search: ")) {
             std::cout << "Invalid name!\n\n";
-            logger.logUserInput("INVALID_BATCH_SEARCH_NAME");
             return;
         }
         logger.logUserInput(name);
         foundPipes = findPipesByName(pipes, name);
-        logger.logCommand("BATCH_SEARCH_COMPLETED: by_name=" + name);
 
     }
     else if (searchChoice == 3) {
-        // Поиск по статусу
-        logger.logCommand("BATCH_SEARCH_BY_STATUS");
         std::cout << "Search by status:\n"
             << "1. Under renovation\n"
             << "2. Working\n";
@@ -540,24 +450,20 @@ void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger) {
         int statusChoice;
         if (!isValidInput(statusChoice, "Enter your choice: ")) {
             std::cout << "Invalid choice!\n\n";
-            logger.logUserInput("INVALID_BATCH_STATUS_CHOICE");
             return;
         }
         logger.logUserInput(std::to_string(statusChoice));
 
         foundPipes = findPipesByStatus(pipes, statusChoice == 1);
-        logger.logCommand("BATCH_SEARCH_COMPLETED: by_status=" + std::to_string(statusChoice));
 
     }
     else {
         std::cout << "Invalid choice!\n\n";
-        logger.logUserInput("INVALID_BATCH_SEARCH_OPTION");
         return;
     }
 
     if (foundPipes.empty()) {
         std::cout << "No pipes to edit.\n\n";
-        logger.logCommand("BATCH_EDIT_NO_PIPES");
         return;
     }
 
@@ -567,7 +473,6 @@ void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger) {
             << " - " << (pipes[id].getStatus() ? "UNDER RENOVATION" : "WORKING") << "\n";
     }
 
-    logger.logCommand("BATCH_EDIT_OPTIONS");
     std::cout << "\nChoose editing option:\n";
     std::cout << "1. Edit all found pipes\n";
     std::cout << "2. Select specific pipes to edit\n";
@@ -576,7 +481,6 @@ void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger) {
     int choice;
     if (!isValidInput(choice, "Enter your choice: ")) {
         std::cout << "Invalid choice!\n\n";
-        logger.logUserInput("INVALID_CHOICE");
         return;
     }
     logger.logUserInput(std::to_string(choice));
@@ -585,10 +489,8 @@ void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger) {
 
     if (choice == 1) {
         pipesToEdit = foundPipes;
-        logger.logCommand("BATCH_EDIT_ALL_SELECTED");
     }
     else if (choice == 2) {
-        logger.logCommand("BATCH_EDIT_SELECT_SPECIFIC");
         std::cout << "Enter pipe IDs to edit (separated by spaces, 0 to finish):\n";
         int id;
         while (std::cin >> id && id != 0) {
@@ -598,38 +500,31 @@ void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger) {
             }
             else {
                 std::cout << "ID " << id << " not in found pipes.\n";
-                logger.logUserInput("INVALID_ID: " + std::to_string(id));
             }
         }
         clearInputBuffer();
     }
     else {
         std::cout << "Operation cancelled.\n\n";
-        logger.logCommand("BATCH_EDIT_CANCELLED");
         return;
     }
 
     if (pipesToEdit.empty()) {
         std::cout << "No pipes selected for editing.\n\n";
-        logger.logCommand("BATCH_EDIT_NO_SELECTION");
         return;
     }
 
-    logger.logCommand("BATCH_EDIT_ACTION");
     std::cout << "\nChoose what to edit:\n";
     std::cout << "1. Change repair status\n";
     std::cout << "2. Delete pipes\n";
 
     if (!isValidInput(choice, "Enter your choice: ")) {
         std::cout << "Invalid choice!\n\n";
-        logger.logUserInput("INVALID_ACTION_CHOICE");
         return;
     }
     logger.logUserInput(std::to_string(choice));
 
     if (choice == 1) {
-        logger.logCommand("BATCH_EDIT_CHANGE_STATUS");
-
         std::cout << "\nCurrent status of selected pipes:\n";
         for (int id : pipesToEdit) {
             std::cout << "ID: " << id << " - " << pipes[id].getName()
@@ -645,14 +540,12 @@ void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger) {
         int statusChoice;
         if (!isValidInput(statusChoice, "Enter your choice: ")) {
             std::cout << "Invalid choice!\n\n";
-            logger.logUserInput("INVALID_STATUS_CHOICE");
             return;
         }
         logger.logUserInput(std::to_string(statusChoice));
 
         if (statusChoice == 0) {
             std::cout << "Operation cancelled.\n\n";
-            logger.logCommand("BATCH_STATUS_CANCELLED");
             return;
         }
 
@@ -667,7 +560,6 @@ void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger) {
                 }
             }
             std::cout << "Put " << changedCount << " pipes UNDER RENOVATION.\n\n";
-            logger.logCommand("BATCH_STATUS_SET_RENOVATION: count=" + std::to_string(changedCount));
             break;
         }
 
@@ -679,7 +571,6 @@ void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger) {
                 }
             }
             std::cout << "Set " << changedCount << " pipes to WORKING status.\n\n";
-            logger.logCommand("BATCH_STATUS_SET_WORKING: count=" + std::to_string(changedCount));
             break;
         }
 
@@ -689,19 +580,15 @@ void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger) {
                 changedCount++;
             }
             std::cout << "Toggled status for " << changedCount << " pipes.\n\n";
-            logger.logCommand("BATCH_STATUS_TOGGLED: count=" + std::to_string(changedCount));
             break;
         }
 
         default:
             std::cout << "Invalid choice! Operation cancelled.\n\n";
-            logger.logUserInput("INVALID_STATUS_ACTION");
             break;
         }
     }
     else if (choice == 2) {
-        logger.logCommand("BATCH_EDIT_DELETE_PIPES");
-
         std::cout << "Are you sure you want to delete " << pipesToEdit.size() << " pipes? (Y/N): ";
         char confirm;
         std::cin >> confirm;
@@ -713,15 +600,12 @@ void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger) {
                 pipes.erase(id);
             }
             std::cout << "Deleted " << pipesToEdit.size() << " pipes.\n\n";
-            logger.logCommand("BATCH_PIPES_DELETED: count=" + std::to_string(pipesToEdit.size()));
         }
         else {
             std::cout << "Deletion cancelled.\n\n";
-            logger.logCommand("BATCH_DELETE_CANCELLED");
         }
     }
     else {
         std::cout << "Invalid choice!\n\n";
-        logger.logUserInput("INVALID_BATCH_ACTION");
     }
 }

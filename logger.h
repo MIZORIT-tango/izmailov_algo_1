@@ -3,11 +3,11 @@
 
 #include <string>
 #include <fstream>
-#include <ctime>
 
 class Logger {
 private:
     std::ofstream logFile;
+    std::ofstream userInputLogFile;
 
 public:
     Logger(const std::string& filename);

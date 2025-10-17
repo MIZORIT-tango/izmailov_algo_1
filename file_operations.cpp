@@ -27,14 +27,12 @@ void saveData(const std::string& filename, const std::map<int, Pipe>& pipes,
 
         file.close();
         std::cout << "Data saved to " << filename << "\n\n";
-        logger.logCommand("DATA_SAVED: pipes=" + std::to_string(pipes.size()) +
-            ", stations=" + std::to_string(stations.size()));
     }
     else {
         std::cout << "Error saving data to file.\n\n";
-        logger.logCommand("SAVE_ERROR: filename=" + filename);
     }
 }
+
 
 void loadData(const std::string& filename, std::map<int, Pipe>& pipes,
     std::map<int, CompressStation>& stations, Logger& logger) {
@@ -42,7 +40,6 @@ void loadData(const std::string& filename, std::map<int, Pipe>& pipes,
 
     if (!file.is_open()) {
         std::cout << "Error opening file for reading!\n\n";
-        logger.logCommand("LOAD_ERROR: file_not_found=" + filename);
         return;
     }
 
@@ -66,8 +63,8 @@ void loadData(const std::string& filename, std::map<int, Pipe>& pipes,
                 file >> g_nextStationId;
                 counters_loaded = true;
 
-                std::getline(file, line);
-                std::getline(file, line);
+                std::getline(file, line); 
+                std::getline(file, line); 
                 continue;
             }
             else if (line == PIPE_START_TAG) {
@@ -130,16 +127,12 @@ void loadData(const std::string& filename, std::map<int, Pipe>& pipes,
         }
 
         std::cout << "Data loaded successfully from " << filename << "\n\n";
-        logger.logCommand("DATA_LOADED: pipes=" + std::to_string(pipes.size()) +
-            ", stations=" + std::to_string(stations.size()));
 
     }
     catch (const std::exception& e) {
         std::cout << "Error reading file: " << e.what() << "\n" << std::endl;
-        logger.logCommand("LOAD_ERROR: " + std::string(e.what()));
         pipes.clear();
         stations.clear();
-
         g_nextPipeId = 1;
         g_nextStationId = 1;
     }

@@ -1,41 +1,18 @@
 #include "logger.h"
-#include <chrono>
-#include <iomanip>
 
 Logger::Logger(const std::string& filename) {
     logFile.open(filename, std::ios::app);
-    if (logFile.is_open()) {
-        auto now = std::chrono::system_clock::now();
-        auto time_t = std::chrono::system_clock::to_time_t(now);
 
-        char timestamp[26];
-        ctime_s(timestamp, sizeof(timestamp), &time_t);
-
-        std::string timeStr(timestamp);
-        if (!timeStr.empty() && timeStr.back() == '\n') {
-            timeStr.pop_back();
-        }
-
-        logFile << "=== Session started: " << timeStr << " ===\n";
-        logFile.flush();
-    }
+    std::string userInputFilename = "user_input_" + filename;
+    userInputLogFile.open(userInputFilename, std::ios::app);
 }
 
 Logger::~Logger() {
     if (logFile.is_open()) {
-        auto now = std::chrono::system_clock::now();
-        auto time_t = std::chrono::system_clock::to_time_t(now);
-
-        char timestamp[26];
-        ctime_s(timestamp, sizeof(timestamp), &time_t);
-
-        std::string timeStr(timestamp);
-        if (!timeStr.empty() && timeStr.back() == '\n') {
-            timeStr.pop_back();
-        }
-
-        logFile << "=== Session ended: " << timeStr << " ===\n\n";
         logFile.close();
+    }
+    if (userInputLogFile.is_open()) {
+        userInputLogFile.close();
     }
 }
 
@@ -48,7 +25,11 @@ void Logger::logCommand(const std::string& command) {
 
 void Logger::logUserInput(const std::string& input) {
     if (logFile.is_open()) {
-        logFile << input << "\n";
+        logFile << "USER_INPUT: " << input << "\n";
         logFile.flush();
+    }
+    if (userInputLogFile.is_open()) {
+        userInputLogFile << input << "\n"; 
+        userInputLogFile.flush();
     }
 }
