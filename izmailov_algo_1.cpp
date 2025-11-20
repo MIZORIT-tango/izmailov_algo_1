@@ -148,7 +148,7 @@ void showMenu(std::map<int, Pipe>& pipes, std::map<int, CompressStation>& statio
             }
             logger.logUserInput(std::to_string(searchChoice));
 
-            std::vector<int> foundPipes;
+            std::map<int, Pipe> foundPipes;
 
             if (searchChoice == 1) {
                 int searchId;
@@ -156,9 +156,8 @@ void showMenu(std::map<int, Pipe>& pipes, std::map<int, CompressStation>& statio
                     std::cout << "Invalid ID!\n\n";
                     break;
                 }
-                logger.logUserInput(std::to_string(searchId)); 
+                logger.logUserInput(std::to_string(searchId));
                 foundPipes = findPipesById(pipes, searchId);
-
             }
             else if (searchChoice == 2) {
                 std::string name;
@@ -166,9 +165,8 @@ void showMenu(std::map<int, Pipe>& pipes, std::map<int, CompressStation>& statio
                     std::cout << "Invalid name!\n\n";
                     break;
                 }
-                logger.logUserInput(name); 
+                logger.logUserInput(name);
                 foundPipes = findPipesByName(pipes, name);
-
             }
             else if (searchChoice == 3) {
                 std::cout << "Search by status:\n"
@@ -180,10 +178,9 @@ void showMenu(std::map<int, Pipe>& pipes, std::map<int, CompressStation>& statio
                     std::cout << "Invalid choice!\n\n";
                     break;
                 }
-                logger.logUserInput(std::to_string(statusChoice)); 
+                logger.logUserInput(std::to_string(statusChoice));
 
                 foundPipes = findPipesByStatus(pipes, statusChoice == 1);
-
             }
             else {
                 std::cout << "Invalid choice!\n\n";
@@ -194,9 +191,9 @@ void showMenu(std::map<int, Pipe>& pipes, std::map<int, CompressStation>& statio
                 std::cout << "No pipes found.\n\n";
             }
             else {
-                std::cout << "Found " << foundPipes.size() << " pipes:\n";
-                for (int id : foundPipes) {
-                    pipes[id].displayInfo();
+                std::cout << "\nFound " << foundPipes.size() << " pipes:\n\n";
+                for (const auto& pair : foundPipes) {
+                    std::cout << pair.second;
                 }
             }
             break;
@@ -215,7 +212,7 @@ void showMenu(std::map<int, Pipe>& pipes, std::map<int, CompressStation>& statio
             }
             logger.logUserInput(std::to_string(searchChoice)); 
 
-            std::vector<int> foundStations;
+            std::map<int, CompressStation> foundStations;
 
             if (searchChoice == 1) {
                 int searchId;
@@ -223,9 +220,8 @@ void showMenu(std::map<int, Pipe>& pipes, std::map<int, CompressStation>& statio
                     std::cout << "Invalid ID!\n\n";
                     break;
                 }
-                logger.logUserInput(std::to_string(searchId)); 
+                logger.logUserInput(std::to_string(searchId));
                 foundStations = findStationsById(stations, searchId);
-
             }
             else if (searchChoice == 2) {
                 std::string name;
@@ -233,9 +229,8 @@ void showMenu(std::map<int, Pipe>& pipes, std::map<int, CompressStation>& statio
                     std::cout << "Invalid name!\n\n";
                     break;
                 }
-                logger.logUserInput(name); 
+                logger.logUserInput(name);
                 foundStations = findStationsByName(stations, name);
-
             }
             else if (searchChoice == 3) {
                 double minPercent;
@@ -243,9 +238,8 @@ void showMenu(std::map<int, Pipe>& pipes, std::map<int, CompressStation>& statio
                     std::cout << "Invalid percentage!\n\n";
                     break;
                 }
-                logger.logUserInput(std::to_string(minPercent)); 
+                logger.logUserInput(std::to_string(minPercent));
                 foundStations = findStationsByUnusedPercentage(stations, minPercent);
-
             }
             else {
                 std::cout << "Invalid choice!\n\n";
@@ -256,9 +250,9 @@ void showMenu(std::map<int, Pipe>& pipes, std::map<int, CompressStation>& statio
                 std::cout << "No CS found.\n\n";
             }
             else {
-                std::cout << "Found " << foundStations.size() << " CS:\n";
-                for (int id : foundStations) {
-                    stations[id].displayInfo();
+                std::cout << "\nFound " << foundStations.size() << " CS:\n\n";
+                for (const auto& pair : foundStations) {
+                    std::cout << pair.second;
                 }
             }
             break;

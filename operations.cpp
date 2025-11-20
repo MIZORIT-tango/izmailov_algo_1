@@ -77,7 +77,7 @@ void viewAllObjects(const std::map<int, Pipe>& pipes, const std::map<int, Compre
     }
     else {
         for (const auto& pair : pipes) {
-            pair.second.displayInfo();
+            std::cout << pair.second;
         }
     }
 
@@ -87,65 +87,65 @@ void viewAllObjects(const std::map<int, Pipe>& pipes, const std::map<int, Compre
     }
     else {
         for (const auto& pair : stations) {
-            pair.second.displayInfo();
+            std::cout << pair.second;
         }
     }
     std::cout << std::endl;
 }
 
-std::vector<int> findPipesByName(const std::map<int, Pipe>& pipes, const std::string& name) {
-    std::vector<int> result;
+std::map<int, Pipe> findPipesByName(const std::map<int, Pipe>& pipes, const std::string& name) {
+    std::map<int, Pipe> result;
     for (const auto& pair : pipes) {
         if (pair.second.getName().find(name) != std::string::npos) {
-            result.push_back(pair.first);
+            result[pair.first] = pair.second;
         }
     }
     return result;
 }
 
-std::vector<int> findPipesByStatus(const std::map<int, Pipe>& pipes, bool status) {
-    std::vector<int> result;
+std::map<int, Pipe> findPipesByStatus(const std::map<int, Pipe>& pipes, bool status) {
+    std::map<int, Pipe> result;
     for (const auto& pair : pipes) {
         if (pair.second.getStatus() == status) {
-            result.push_back(pair.first);
+            result[pair.first] = pair.second;
         }
     }
     return result;
 }
 
-std::vector<int> findPipesById(const std::map<int, Pipe>& pipes, int id) {
-    std::vector<int> result;
+std::map<int, Pipe> findPipesById(const std::map<int, Pipe>& pipes, int id) {
+    std::map<int, Pipe> result;
     if (pipes.find(id) != pipes.end()) {
-        result.push_back(id);
+        result[id] = pipes.at(id);
     }
     return result;
 }
 
-std::vector<int> findStationsByName(const std::map<int, CompressStation>& stations, const std::string& name) {
-    std::vector<int> result;
+std::map<int, CompressStation> findStationsByName(const std::map<int, CompressStation>& stations, const std::string& name) {
+    std::map<int, CompressStation> result;
     for (const auto& pair : stations) {
         if (pair.second.getName().find(name) != std::string::npos) {
-            result.push_back(pair.first);
+            result[pair.first] = pair.second;
         }
     }
     return result;
 }
 
-std::vector<int> findStationsByUnusedPercentage(const std::map<int, CompressStation>& stations, double minPercent, double maxPercent) {
-    std::vector<int> result;
+std::map<int, CompressStation> findStationsByUnusedPercentage(const std::map<int, CompressStation>& stations, double minPercent, double maxPercent) {
+    std::map<int, CompressStation> result;
     for (const auto& pair : stations) {
         double percent = pair.second.getUnusedPercentage();
         if (percent >= minPercent && percent <= maxPercent) {
-            result.push_back(pair.first);
+            result[pair.first] = pair.second;
         }
     }
     return result;
 }
 
-std::vector<int> findStationsById(const std::map<int, CompressStation>& stations, int id) {
-    std::vector<int> result;
+std::map<int, CompressStation> findStationsById(const std::map<int, CompressStation>& stations, int id) {
+    std::map<int, CompressStation> result;
     if (stations.find(id) != stations.end()) {
-        result.push_back(id);
+        result[id] = stations.at(id);
     }
     return result;
 }
@@ -171,7 +171,7 @@ void editPipe(std::map<int, Pipe>& pipes, Logger& logger) {
     Pipe& pipe = pipes[pipeId];
 
     std::cout << "\nCurrent pipe data:\n";
-    pipe.displayInfo();
+    std::cout << pipe;
 
     int fieldChoice;
     do {
@@ -300,7 +300,7 @@ void editCompressStation(std::map<int, CompressStation>& stations, Logger& logge
     CompressStation& station = stations[stationId];
 
     std::cout << "\nCurrent CS data:\n";
-    station.displayInfo();
+    std::cout << station;
 
     int fieldChoice;
     do {
@@ -420,7 +420,7 @@ void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger) {
     }
     logger.logUserInput(std::to_string(searchChoice));
 
-    std::vector<int> foundPipes;
+    std::map<int, Pipe> foundPipes;
 
     if (searchChoice == 1) {
         int searchId;
@@ -467,10 +467,10 @@ void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger) {
         return;
     }
 
-    std::cout << "Found " << foundPipes.size() << " pipes:\n";
-    for (int id : foundPipes) {
-        std::cout << "ID: " << id << " - " << pipes[id].getName()
-            << " - " << (pipes[id].getStatus() ? "UNDER RENOVATION" : "WORKING") << "\n";
+    std::cout << "\nFound " << foundPipes.size() << " pipes:\n\n";
+    for (const auto& pair : foundPipes) {
+        std::cout << "ID: " << pair.first << " - " << pair.second.getName()
+            << " - " << (pair.second.getStatus() ? "UNDER RENOVATION" : "WORKING") << "\n";
     }
 
     std::cout << "\nChoose editing option:\n";
@@ -485,7 +485,7 @@ void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger) {
     }
     logger.logUserInput(std::to_string(choice));
 
-    std::vector<int> pipesToEdit;
+    std::map<int, Pipe> pipesToEdit;
 
     if (choice == 1) {
         pipesToEdit = foundPipes;
@@ -494,8 +494,8 @@ void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger) {
         std::cout << "Enter pipe IDs to edit (separated by spaces, 0 to finish):\n";
         int id;
         while (std::cin >> id && id != 0) {
-            if (std::find(foundPipes.begin(), foundPipes.end(), id) != foundPipes.end()) {
-                pipesToEdit.push_back(id);
+            if (foundPipes.find(id) != foundPipes.end()) {
+                pipesToEdit[id] = foundPipes[id];
                 logger.logUserInput(std::to_string(id));
             }
             else {
@@ -526,9 +526,9 @@ void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger) {
 
     if (choice == 1) {
         std::cout << "\nCurrent status of selected pipes:\n";
-        for (int id : pipesToEdit) {
-            std::cout << "ID: " << id << " - " << pipes[id].getName()
-                << " - " << (pipes[id].getStatus() ? "UNDER RENOVATION" : "WORKING") << "\n";
+        for (const auto& pair : pipesToEdit) {
+            std::cout << "ID: " << pair.first << " - " << pair.second.getName()
+                << " - " << (pair.second.getStatus() ? "UNDER RENOVATION" : "WORKING") << "\n";
         }
 
         std::cout << "\nSet repair status for all selected pipes:\n";
@@ -553,9 +553,9 @@ void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger) {
 
         switch (statusChoice) {
         case 1: {
-            for (int id : pipesToEdit) {
-                if (!pipes[id].getStatus()) {
-                    pipes[id].setStatus(true);
+            for (const auto& pair : pipesToEdit) {
+                if (!pipes[pair.first].getStatus()) {
+                    pipes[pair.first].setStatus(true);
                     changedCount++;
                 }
             }
@@ -564,9 +564,9 @@ void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger) {
         }
 
         case 2: {
-            for (int id : pipesToEdit) {
-                if (pipes[id].getStatus()) {
-                    pipes[id].setStatus(false);
+            for (const auto& pair : pipesToEdit) {
+                if (pipes[pair.first].getStatus()) {
+                    pipes[pair.first].setStatus(false);
                     changedCount++;
                 }
             }
@@ -575,8 +575,8 @@ void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger) {
         }
 
         case 3: {
-            for (int id : pipesToEdit) {
-                pipes[id].setStatus(!pipes[id].getStatus());
+            for (const auto& pair : pipesToEdit) {
+                pipes[pair.first].setStatus(!pipes[pair.first].getStatus());
                 changedCount++;
             }
             std::cout << "Toggled status for " << changedCount << " pipes.\n\n";
@@ -596,8 +596,8 @@ void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger) {
         logger.logUserInput(std::string(1, confirm));
 
         if (tolower(confirm) == 'y') {
-            for (int id : pipesToEdit) {
-                pipes.erase(id);
+            for (const auto& pair : pipesToEdit) {
+                pipes.erase(pair.first);
             }
             std::cout << "Deleted " << pipesToEdit.size() << " pipes.\n\n";
         }

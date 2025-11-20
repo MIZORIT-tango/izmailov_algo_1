@@ -30,7 +30,6 @@ public:
     void setClass(const std::string& cls) { class_cs = cls; }
 
     bool changeNumberOfWorkshopsInWork(int number);
-    void displayInfo() const;
 
     friend std::ostream& operator<<(std::ostream& out, const CompressStation& cs);
     friend std::istream& operator>>(std::istream& in, CompressStation& cs);

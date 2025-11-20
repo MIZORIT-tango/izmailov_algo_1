@@ -1,8 +1,0 @@
-<STATION>
-1
-fffff
-10
-10
-ddd
-</STATION>
-

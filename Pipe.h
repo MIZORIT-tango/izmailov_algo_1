@@ -28,7 +28,6 @@ public:
     void setStatus(bool s) { status = s; }
 
     bool switchStatus(int o);
-    void displayInfo() const;
 
     friend std::ostream& operator<<(std::ostream& out, const Pipe& p);
     friend std::istream& operator>>(std::istream& in, Pipe& p);

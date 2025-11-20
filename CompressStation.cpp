@@ -26,21 +26,22 @@ bool CompressStation::changeNumberOfWorkshopsInWork(int number) {
     }
 }
 
-void CompressStation::displayInfo() const {
-    std::cout << "ID: " << id << "\n";
-    std::cout << "Name: " << name << "\n";
-    std::cout << "Number of workshops: " << number_of_workshops << "\n";
-    std::cout << "Number of workshops in work: " << number_of_workshops_in_work << "\n";
-    std::cout << "Class: " << class_cs << "\n";
-    std::cout << "Unused percentage: " << getUnusedPercentage() << "%\n\n";
-}
-
 std::ostream& operator<<(std::ostream& out, const CompressStation& cs) {
-    out << cs.id << "\n";
-    out << cs.name << "\n";
-    out << cs.number_of_workshops << "\n";
-    out << cs.number_of_workshops_in_work << "\n";
-    out << cs.class_cs << "\n";
+    if (&out == &std::cout) {
+        out << "ID: " << cs.id << "\n";
+        out << "Name: " << cs.name << "\n";
+        out << "Number of workshops: " << cs.number_of_workshops << "\n";
+        out << "Number of workshops in work: " << cs.number_of_workshops_in_work << "\n";
+        out << "Class: " << cs.class_cs << "\n";
+        out << "Unused percentage: " << cs.getUnusedPercentage() << "%\n\n";
+    }
+    else {
+        out << cs.id << "\n";
+        out << cs.name << "\n";
+        out << cs.number_of_workshops << "\n";
+        out << cs.number_of_workshops_in_work << "\n";
+        out << cs.class_cs << "\n";
+    }
     return out;
 }
 
