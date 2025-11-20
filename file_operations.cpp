@@ -73,15 +73,24 @@ void loadData(const std::string& filename, std::map<int, Pipe>& pipes,
                 float length;
                 int diameter;
                 bool status;
+                bool isConnected;
+                int startStationId;
+                int endStationId;
 
                 file >> id;
                 file.ignore();
                 std::getline(file, name);
                 file >> length >> diameter >> status;
+                file >> isConnected;
+                file >> startStationId;
+                file >> endStationId;
 
                 Pipe pipe(id, name, length, diameter);
-                if (status) {
-                    pipe.setStatus(true);
+                pipe.setStatus(status);
+
+                if (isConnected && startStationId != -1 && endStationId != -1) {
+                    pipe.connect(startStationId, endStationId);
+                    pipe.connect(startStationId, endStationId);
                 }
 
                 pipes[pipe.getId()] = pipe;

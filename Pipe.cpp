@@ -1,9 +1,28 @@
 #include "pipe.h"
 
-Pipe::Pipe() : id(0), name(""), length(0.0f), diameter(0), status(true) {}
+Pipe::Pipe() : id(0), name(""), length(0.0f), diameter(0), status(true),
+isConnected(false), startStationId(-1), endStationId(-1) {
+}
 
 Pipe::Pipe(int pipeId, const std::string& n, float l, int d)
-    : id(pipeId), name(n), length(l), diameter(d), status(true) {
+    : id(pipeId), name(n), length(l), diameter(d), status(true),
+    isConnected(false), startStationId(-1), endStationId(-1) {
+}
+
+void Pipe::connect(int startId, int endId) {
+    isConnected = true;
+    startStationId = startId;
+    endStationId = endId;
+}
+
+void Pipe::disconnect() {
+    isConnected = false;
+    startStationId = -1;
+    endStationId = -1;
+}
+
+bool Pipe::isConnectedToStation(int stationId) const {
+    return isConnected && (startStationId == stationId || endStationId == stationId);
 }
 
 bool Pipe::switchStatus(int o) {
@@ -26,7 +45,13 @@ std::ostream& operator<<(std::ostream& out, const Pipe& p) {
         out << "Name: " << p.name << "\n";
         out << "Length: " << p.length << "\n";
         out << "Diameter: " << p.diameter << "\n";
-        out << "Status: " << (p.status ? "Under renovation" : "Working") << "\n\n";
+        out << "Status: " << (p.status ? "Under renovation" : "Working") << "\n";
+        out << "Connected: " << (p.isConnected ? "Yes" : "No") << "\n";
+        if (p.isConnected) {
+            out << "Start Station ID: " << p.startStationId << "\n";
+            out << "End Station ID: " << p.endStationId << "\n";
+        }
+        out << "\n";
     }
     else {
         out << p.id << "\n";
@@ -34,6 +59,9 @@ std::ostream& operator<<(std::ostream& out, const Pipe& p) {
         out << p.length << "\n";
         out << p.diameter << "\n";
         out << p.status << "\n";
+        out << p.isConnected << "\n";
+        out << p.startStationId << "\n";
+        out << p.endStationId << "\n";
     }
     return out;
 }
@@ -45,5 +73,8 @@ std::istream& operator>>(std::istream& in, Pipe& p) {
     in >> p.length;
     in >> p.diameter;
     in >> p.status;
+    in >> p.isConnected;
+    in >> p.startStationId;
+    in >> p.endStationId;
     return in;
 }

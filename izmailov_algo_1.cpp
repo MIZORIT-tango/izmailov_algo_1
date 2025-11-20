@@ -7,9 +7,11 @@
 #include "file_operations.h"
 #include "operations.h"
 #include "globals.h"
+#include "GasNetwork.h"
 
 void showMenu(std::map<int, Pipe>& pipes, std::map<int, CompressStation>& stations, Logger& logger) {
     int menu_choose;
+    GasNetwork gasNetwork(pipes, stations);
 
     while (true) {
         std::cout << "Select an action:\n"
@@ -25,6 +27,13 @@ void showMenu(std::map<int, Pipe>& pipes, std::map<int, CompressStation>& statio
             << "10. Load\n"
             << "11. Edit pipe by ID (all fields)\n"
             << "12. Edit CS by ID (all fields)\n"
+            << "13. Create connection\n"
+            << "14. Show adjacency matrix\n"
+            << "15. Show weight matrix\n"
+            << "16. Show connections list\n"
+            << "17. Topological sort\n"
+            << "18. Batch delete CS\n"    
+            << "19. Destroy connection\n" 
             << "0. Exit\n";
 
         if (!isValidInput(menu_choose, "Enter your choice: ")) {
@@ -32,7 +41,7 @@ void showMenu(std::map<int, Pipe>& pipes, std::map<int, CompressStation>& statio
             continue;
         }
 
-        logger.logUserInput(std::to_string(menu_choose)); 
+        logger.logUserInput(std::to_string(menu_choose));
 
         switch (menu_choose) {
         case 1:
@@ -112,7 +121,7 @@ void showMenu(std::map<int, Pipe>& pipes, std::map<int, CompressStation>& statio
                 std::cout << "Invalid ID!\n\n";
                 break;
             }
-            logger.logUserInput(std::to_string(stationId)); 
+            logger.logUserInput(std::to_string(stationId));
 
             if (stations.find(stationId) == stations.end()) {
                 std::cout << "CS with ID " << stationId << " not found.\n\n";
@@ -210,7 +219,7 @@ void showMenu(std::map<int, Pipe>& pipes, std::map<int, CompressStation>& statio
                 std::cout << "Invalid choice!\n\n";
                 break;
             }
-            logger.logUserInput(std::to_string(searchChoice)); 
+            logger.logUserInput(std::to_string(searchChoice));
 
             std::map<int, CompressStation> foundStations;
 
@@ -260,6 +269,7 @@ void showMenu(std::map<int, Pipe>& pipes, std::map<int, CompressStation>& statio
 
         case 8:
             batchEditPipes(pipes, logger);
+            gasNetwork.updateMatrices();
             break;
 
         case 9: {
@@ -293,7 +303,7 @@ void showMenu(std::map<int, Pipe>& pipes, std::map<int, CompressStation>& statio
                 std::cout << "Invalid filename!\n\n";
                 break;
             }
-            logger.logUserInput(filename); 
+            logger.logUserInput(filename);
 
             std::cout << "Are you sure? The current data will be replaced.\n";
             std::cout << "Choice: Y/N (Yes/No)\n";
@@ -301,10 +311,13 @@ void showMenu(std::map<int, Pipe>& pipes, std::map<int, CompressStation>& statio
             char choice;
             std::cin >> choice;
             clearInputBuffer();
-            logger.logUserInput(std::string(1, choice)); 
+            logger.logUserInput(std::string(1, choice));
 
             if (tolower(choice) == 'y') {
                 loadData(filename, pipes, stations, logger);
+                gasNetwork.updateMatrices();
+                std::cout << "Data loaded successfully from " << filename << "\n";
+                std::cout << "Matrices updated.\n\n";
             }
             else {
                 std::cout << "Load cancelled.\n\n";
@@ -320,12 +333,85 @@ void showMenu(std::map<int, Pipe>& pipes, std::map<int, CompressStation>& statio
             editCompressStation(stations, logger);
             break;
 
+        case 13: {
+            if (stations.size() < 2) {
+                std::cout << "You need at least 2 CS to create a connection.!\n\n";
+                break;
+            }
+
+            int startStationId, endStationId, diameter;
+
+            if (!isValidInput(startStationId, "Enter START station ID: ")) {
+                std::cout << "Invalid ID!\n\n";
+                break;
+            }
+            logger.logUserInput(std::to_string(startStationId));
+
+            if (!isValidInput(endStationId, "Enter END station ID: ")) {
+                std::cout << "Invalid ID!\n\n";
+                break;
+            }
+            logger.logUserInput(std::to_string(endStationId));
+
+            if (!isValidInput(diameter, "Enter pipe diameter: ")) {
+                std::cout << "Invalid diameter!\n\n";
+                break;
+            }
+            logger.logUserInput(std::to_string(diameter));
+
+            gasNetwork.createConnection(startStationId, endStationId, diameter);
+            break;
+        }
+
+        case 14:
+            gasNetwork.showAdjacencyMatrix();
+            break;
+
+        case 15:
+            gasNetwork.showWeightMatrix();
+            break;
+
+        case 16:
+            gasNetwork.showConnectionsList();
+            break;
+
+        case 17: {
+            std::vector<int> sortedStations = gasNetwork.topologicalSort();
+
+            if (sortedStations.empty()) {
+                std::cout << "It is impossible to perform topological sorting.\n";
+                std::cout << "Possible causes: empty graph, cycles in the graph.\n\n";
+            }
+            else {
+                std::cout << "=== TOPOLOGICAL SORTING ===\n";
+                std::cout << "CS processing procedure: ";
+                for (size_t i = 0; i < sortedStations.size(); ++i) {
+                    std::cout << "CS" << sortedStations[i];
+                    if (i < sortedStations.size() - 1) {
+                        std::cout << " -> ";
+                    }
+                }
+                std::cout << "\n\n";
+            }
+            break;
+        }
+
+        case 18:
+            batchDeleteStations(stations, pipes, logger);
+            gasNetwork.updateMatrices();
+            break;
+
+        case 19:
+            destroyConnection(pipes, logger);
+            gasNetwork.updateMatrices();
+            break;
+
         case 0:
             std::cout << "Goodbye!\n";
             return;
 
         default:
-            std::cout << "Invalid choice! Please enter a number between 0 and 12.\n\n";
+            std::cout << "Invalid choice! Please enter a number between 0 and 17.\n\n";
             break;
         }
     }

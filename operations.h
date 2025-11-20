@@ -15,6 +15,7 @@ std::map<int, Pipe> findPipesByName(const std::map<int, Pipe>& pipes, const std:
 std::map<int, Pipe> findPipesByStatus(const std::map<int, Pipe>& pipes, bool status);
 std::map<int, Pipe> findPipesById(const std::map<int, Pipe>& pipes, int id);
 void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger);
+void batchDeleteStations(std::map<int, CompressStation>& stations, std::map<int, Pipe>& pipes, Logger& logger);
 
 void addCompressStation(std::map<int, CompressStation>& stations, Logger& logger);
 void editCompressStation(std::map<int, CompressStation>& stations, Logger& logger);
@@ -23,5 +24,7 @@ std::map<int, CompressStation> findStationsByUnusedPercentage(const std::map<int
 std::map<int, CompressStation> findStationsById(const std::map<int, CompressStation>& stations, int id);
 
 void viewAllObjects(const std::map<int, Pipe>& pipes, const std::map<int, CompressStation>& stations);
+
+void destroyConnection(std::map<int, Pipe>& pipes, Logger& logger);
 
 #endif

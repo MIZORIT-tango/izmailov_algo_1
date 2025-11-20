@@ -11,6 +11,9 @@ private:
     float length;
     int diameter;
     bool status;
+    bool isConnected;
+    int startStationId;
+    int endStationId;
 
 public:
     Pipe();
@@ -21,11 +24,18 @@ public:
     float getLength() const { return length; }
     int getDiameter() const { return diameter; }
     bool getStatus() const { return status; }
+    bool getIsConnected() const { return isConnected; }
+    int getStartStationId() const { return startStationId; }
+    int getEndStationId() const { return endStationId; }
 
     void setName(const std::string& n) { name = n; }
     void setLength(float l) { length = l; }
     void setDiameter(int d) { diameter = d; }
     void setStatus(bool s) { status = s; }
+
+    void connect(int startId, int endId);
+    void disconnect();
+    bool isConnectedToStation(int stationId) const;
 
     bool switchStatus(int o);
 

@@ -609,3 +609,254 @@ void batchEditPipes(std::map<int, Pipe>& pipes, Logger& logger) {
         std::cout << "Invalid choice!\n\n";
     }
 }
+
+void batchDeleteStations(std::map<int, CompressStation>& stations, std::map<int, Pipe>& pipes, Logger& logger) {
+    if (stations.empty()) {
+        std::cout << "No compress stations available to delete.\n\n";
+        return;
+    }
+
+    std::cout << "Batch delete stations - search stations to delete:\n"
+        << "1. By ID\n"
+        << "2. By name\n"
+        << "3. By unused percentage\n";
+
+    int searchChoice;
+    if (!isValidInput(searchChoice, "Enter your choice: ")) {
+        std::cout << "Invalid choice!\n\n";
+        return;
+    }
+    logger.logUserInput(std::to_string(searchChoice));
+
+    std::map<int, CompressStation> foundStations;
+
+    if (searchChoice == 1) {
+        int searchId;
+        if (!isValidInput(searchId, "Enter station ID to search: ")) {
+            std::cout << "Invalid ID!\n\n";
+            return;
+        }
+        logger.logUserInput(std::to_string(searchId));
+        foundStations = findStationsById(stations, searchId);
+
+    }
+    else if (searchChoice == 2) {
+        std::string name;
+        if (!isValidInput(name, "Enter name to search: ")) {
+            std::cout << "Invalid name!\n\n";
+            return;
+        }
+        logger.logUserInput(name);
+        foundStations = findStationsByName(stations, name);
+
+    }
+    else if (searchChoice == 3) {
+        double minPercent;
+        if (!isValidInput(minPercent, "Enter minimum unused percentage: ")) {
+            std::cout << "Invalid percentage!\n\n";
+            return;
+        }
+        logger.logUserInput(std::to_string(minPercent));
+        foundStations = findStationsByUnusedPercentage(stations, minPercent);
+
+    }
+    else {
+        std::cout << "Invalid choice!\n\n";
+        return;
+    }
+
+    if (foundStations.empty()) {
+        std::cout << "No stations to delete.\n\n";
+        return;
+    }
+
+    std::cout << "\nFound " << foundStations.size() << " stations:\n\n";
+    for (const auto& pair : foundStations) {
+        std::cout << "ID: " << pair.first << " - " << pair.second.getName()
+            << " - Unused: " << pair.second.getUnusedPercentage() << "%\n";
+    }
+
+    std::cout << "\nChoose deletion option:\n";
+    std::cout << "1. Delete all found stations\n";
+    std::cout << "2. Select specific stations to delete\n";
+    std::cout << "3. Cancel\n";
+
+    int choice;
+    if (!isValidInput(choice, "Enter your choice: ")) {
+        std::cout << "Invalid choice!\n\n";
+        return;
+    }
+    logger.logUserInput(std::to_string(choice));
+
+    std::map<int, CompressStation> stationsToDelete;
+
+    if (choice == 1) {
+        stationsToDelete = foundStations;
+    }
+    else if (choice == 2) {
+        std::cout << "Enter station IDs to delete (separated by spaces, 0 to finish):\n";
+        int id;
+        while (std::cin >> id && id != 0) {
+            if (foundStations.find(id) != foundStations.end()) {
+                stationsToDelete[id] = foundStations[id];
+                logger.logUserInput(std::to_string(id));
+            }
+            else {
+                std::cout << "ID " << id << " not in found stations.\n";
+            }
+        }
+        clearInputBuffer();
+    }
+    else {
+        std::cout << "Operation cancelled.\n\n";
+        return;
+    }
+
+    if (stationsToDelete.empty()) {
+        std::cout << "No stations selected for deletion.\n\n";
+        return;
+    }
+
+    std::cout << "Are you sure you want to delete " << stationsToDelete.size() << " stations? (Y/N): ";
+    char confirm;
+    std::cin >> confirm;
+    clearInputBuffer();
+    logger.logUserInput(std::string(1, confirm));
+
+    if (tolower(confirm) == 'y') {
+        int disconnectedPipes = 0;
+
+        for (const auto& pair : stationsToDelete) {
+            int stationId = pair.first;
+
+            for (auto& pipePair : pipes) {
+                Pipe& pipe = pipePair.second;
+                if (pipe.isConnectedToStation(stationId)) {
+                    pipe.disconnect();
+                    disconnectedPipes++;
+                }
+            }
+
+            stations.erase(stationId);
+        }
+
+        std::cout << "Deleted " << stationsToDelete.size() << " stations.\n";
+        if (disconnectedPipes > 0) {
+            std::cout << "Disconnected " << disconnectedPipes << " pipes.\n";
+        }
+        std::cout << "\n";
+    }
+    else {
+        std::cout << "Deletion cancelled.\n\n";
+    }
+}
+
+void destroyConnection(std::map<int, Pipe>& pipes, Logger& logger) {
+    std::cout << "Destroy connection by:\n"
+        << "1. Pipe ID\n"
+        << "2. Station ID\n"
+        << "3. Cancel\n";
+
+    int choice;
+    if (!isValidInput(choice, "Enter your choice: ")) {
+        std::cout << "Invalid choice!\n\n";
+        return;
+    }
+    logger.logUserInput(std::to_string(choice));
+
+    if (choice == 1) {
+        int pipeId;
+        if (!isValidInput(pipeId, "Enter pipe ID to disconnect: ")) {
+            std::cout << "Invalid ID!\n\n";
+            return;
+        }
+        logger.logUserInput(std::to_string(pipeId));
+
+        if (pipes.find(pipeId) == pipes.end()) {
+            std::cout << "Pipe with ID " << pipeId << " not found.\n\n";
+            return;
+        }
+
+        Pipe& pipe = pipes[pipeId];
+        if (!pipe.getIsConnected()) {
+            std::cout << "Pipe with ID " << pipeId << " is not connected.\n\n";
+            return;
+        }
+
+        std::cout << "Current connection: CS" << pipe.getStartStationId()
+            << " --pipe#" << pipeId << "--> CS" << pipe.getEndStationId() << "\n";
+
+        std::cout << "Are you sure you want to destroy this connection? (Y/N): ";
+        char confirm;
+        std::cin >> confirm;
+        clearInputBuffer();
+        logger.logUserInput(std::string(1, confirm));
+
+        if (tolower(confirm) == 'y') {
+            pipe.disconnect();
+            std::cout << "Connection destroyed successfully!\n\n";
+        }
+        else {
+            std::cout << "Operation cancelled.\n\n";
+        }
+
+    }
+    else if (choice == 2) {
+        int stationId;
+        if (!isValidInput(stationId, "Enter station ID to disconnect all pipes: ")) {
+            std::cout << "Invalid ID!\n\n";
+            return;
+        }
+        logger.logUserInput(std::to_string(stationId));
+
+        bool hasConnections = false;
+        for (auto& pair : pipes) {
+            if (pair.second.isConnectedToStation(stationId)) {
+                hasConnections = true;
+                break;
+            }
+        }
+
+        if (!hasConnections) {
+            std::cout << "No connections found for station ID " << stationId << "\n\n";
+            return;
+        }
+
+        std::cout << "Found connections for station ID " << stationId << ":\n";
+        for (auto& pair : pipes) {
+            Pipe& pipe = pair.second;
+            if (pipe.isConnectedToStation(stationId)) {
+                std::cout << " - pipe#" << pipe.getId() << ": CS" << pipe.getStartStationId()
+                    << " --> CS" << pipe.getEndStationId() << "\n";
+            }
+        }
+
+        std::cout << "Are you sure you want to destroy ALL these connections? (Y/N): ";
+        char confirm;
+        std::cin >> confirm;
+        clearInputBuffer();
+        logger.logUserInput(std::string(1, confirm));
+
+        if (tolower(confirm) == 'y') {
+            int disconnectedCount = 0;
+            for (auto& pair : pipes) {
+                Pipe& pipe = pair.second;
+                if (pipe.isConnectedToStation(stationId)) {
+                    pipe.disconnect();
+                    disconnectedCount++;
+                }
+            }
+            std::cout << "Destroyed " << disconnectedCount << " connections for station ID " << stationId << "\n\n";
+        }
+        else {
+            std::cout << "Operation cancelled.\n\n";
+        }
+
+    }
+    else if (choice == 3) {
+        std::cout << "Operation cancelled.\n\n";
+    }
+    else {
+        std::cout << "Invalid choice!\n\n";
+    }
+}
