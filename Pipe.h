@@ -27,6 +27,8 @@ public:
     bool getIsConnected() const { return isConnected; }
     int getStartStationId() const { return startStationId; }
     int getEndStationId() const { return endStationId; }
+    double getWeightForPath() const;
+    double getCapacity() const;
 
     void setName(const std::string& n) { name = n; }
     void setLength(float l) { length = l; }

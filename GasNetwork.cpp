@@ -3,6 +3,8 @@
 #include <iostream>
 #include <algorithm>
 #include <stack>
+#include <set>
+#include <queue>
 
 GasNetwork::GasNetwork(std::map<int, Pipe>& p, std::map<int, CompressStation>& s)
     : pipes(p), stations(s) {
@@ -352,4 +354,244 @@ std::vector<int> GasNetwork::getVerticesWithNoIncomingEdges() {
     }
 
     return result;
+}
+
+double GasNetwork::calculateMaxFlow(int sourceId, int sinkId) {
+    if (stations.find(sourceId) == stations.end() ||
+        stations.find(sinkId) == stations.end()) {
+        return 0.0;
+    }
+
+    if (sourceId == sinkId) {
+        return std::numeric_limits<double>::infinity();
+    }
+
+    std::map<int, std::vector<std::pair<int, double>>> graph;
+
+    for (const auto& station : stations) {
+        graph[station.first] = std::vector<std::pair<int, double>>();
+    }
+
+    for (const auto& pipePair : pipes) {
+        const Pipe& pipe = pipePair.second;
+        if (pipe.getIsConnected()) {
+            int from = pipe.getStartStationId();
+            int to = pipe.getEndStationId();
+            double capacity = pipe.getCapacity();
+
+            graph[from].push_back({ to, capacity });
+        }
+    }
+
+    double maxFlow = 0.0;
+
+    while (true) {
+        std::queue<int> q;
+        std::map<int, int> parent;
+        std::map<int, double> capacityTo;
+
+        for (const auto& station : stations) {
+            parent[station.first] = -1;
+        }
+
+        q.push(sourceId);
+        parent[sourceId] = sourceId;
+        capacityTo[sourceId] = std::numeric_limits<double>::infinity();
+
+        bool foundPath = false;
+
+        while (!q.empty() && !foundPath) {
+            int current = q.front();
+            q.pop();
+
+            for (const auto& edge : graph[current]) {
+                int neighbor = edge.first;
+                double capacity = edge.second;
+
+                if (parent[neighbor] == -1 && capacity > 1e-9) {
+                    parent[neighbor] = current;
+                    capacityTo[neighbor] = std::min(capacityTo[current], capacity);
+
+                    if (neighbor == sinkId) {
+                        foundPath = true;
+                        break;
+                    }
+
+                    q.push(neighbor);
+                }
+            }
+        }
+
+        if (!foundPath) {
+            break;
+        }
+
+        double pathFlow = capacityTo[sinkId];
+        maxFlow += pathFlow;
+
+        int current = sinkId;
+        while (current != sourceId) {
+            int prev = parent[current];
+
+            for (auto& edge : graph[prev]) {
+                if (edge.first == current) {
+                    edge.second -= pathFlow;
+                    break;
+                }
+            }
+
+            bool hasReverseEdge = false;
+            for (auto& edge : graph[current]) {
+                if (edge.first == prev) {
+                    edge.second += pathFlow;
+                    hasReverseEdge = true;
+                    break;
+                }
+            }
+
+            if (!hasReverseEdge) {
+                graph[current].push_back({ prev, pathFlow });
+            }
+
+            current = prev;
+        }
+    }
+
+    return maxFlow;
+}
+
+std::pair<double, std::vector<int>> GasNetwork::calculateShortestPath(int startId, int endId) {
+    std::map<int, double> dist;
+    std::map<int, int> prev;
+    std::set<std::pair<double, int>> queue;
+
+    for (const auto& station : stations) {
+        dist[station.first] = std::numeric_limits<double>::infinity();
+        prev[station.first] = -1;
+    }
+
+    dist[startId] = 0;
+    queue.insert({ 0, startId });
+
+    while (!queue.empty()) {
+        auto it = queue.begin();
+        double currentDist = it->first;
+        int u = it->second;
+        queue.erase(it);
+
+        if (u == endId) break;
+
+        for (const auto& pipePair : pipes) {
+            const Pipe& pipe = pipePair.second;
+            if (pipe.getIsConnected() && pipe.getStartStationId() == u) {
+                int v = pipe.getEndStationId();
+                double weight = pipe.getWeightForPath();
+                double newDist = currentDist + weight;
+
+                if (newDist < dist[v]) {
+                    auto oldPair = queue.find({ dist[v], v });
+                    if (oldPair != queue.end()) {
+                        queue.erase(oldPair);
+                    }
+                    dist[v] = newDist;
+                    prev[v] = u;
+                    queue.insert({ newDist, v });
+                }
+            }
+        }
+    }
+
+    std::vector<int> path;
+    if (dist[endId] < std::numeric_limits<double>::infinity()) {
+        for (int at = endId; at != -1; at = prev[at]) {
+            path.push_back(at);
+        }
+        std::reverse(path.begin(), path.end());
+    }
+
+    return std::make_pair(dist[endId], path);
+}
+
+void GasNetwork::calculateAndShowMaxFlow() {
+    std::cout << "\n=== CALCULATE MAX FLOW ===\n";
+
+    if (stations.size() < 2) {
+        std::cout << "Need at least 2 CS!\n\n";
+        return;
+    }
+
+    std::cout << "Available CS:\n";
+    for (const auto& station : stations) {
+        std::cout << "CS" << station.first << " - " << station.second.getName() << "\n";
+    }
+
+    int sourceId, sinkId;
+    if (!isValidInput(sourceId, "Enter ID of CS start: ")) {
+        std::cout << "Invalid ID!\n\n";
+        return;
+    }
+
+    if (!isValidInput(sinkId, "Enter ID of CS end: ")) {
+        std::cout << "Invalid ID!\n\n";
+        return;
+    }
+
+    double maxFlow = calculateMaxFlow(sourceId, sinkId);
+
+    std::cout << "\nResults:\n";
+    std::cout << "Max flow from CS" << sourceId
+        << " to CS" << sinkId << ": "
+        << maxFlow << " mln m^3/day\n\n";
+
+    if (maxFlow == 0) {
+        std::cout << "Possible problems:\n";
+        std::cout << "1. No connections between CS\n";
+        std::cout << "2. All pipes under renovation\n\n";
+    }
+}
+
+void GasNetwork::calculateAndShowShortestPath() {
+    std::cout << "\n=== Find a shortest path ===\n";
+
+    if (stations.size() < 2) {
+        std::cout << "You need to have min 2 CS!\n\n";
+        return;
+    }
+
+    std::cout << "Avaible CS:\n";
+    for (const auto& station : stations) {
+        std::cout << "CS" << station.first << " - " << station.second.getName() << "\n";
+    }
+
+    int startId, endId;
+    std::cout << "Enter ID of CS start: ";
+    while (!isValidInput(startId, "Enter startId to edit: ")) {
+        std::cout << "Invalid ID!\n\n";
+    }
+    std::cout << "Enter ID of CS end: ";
+    while (!isValidInput(endId, "Enter endId to edit: ")) {
+        std::cout << "Invalid ID!\n\n";
+    }
+
+    auto result = calculateShortestPath(startId, endId);
+    double distance = result.first;
+    std::vector<int> path = result.second;
+
+    std::cout << "\nResults:\n";
+    if (path.empty()) {
+        std::cout << "Path not found!\n\n";
+    }
+    else {
+        std::cout << "Shortest path from CS" << startId
+            << " to CS" << endId << ":\n";
+        std::cout << "Global lenght: " << distance << "km\n";
+        std::cout << "path: ";
+        for (size_t i = 0; i < path.size(); ++i) {
+            std::cout << "CS" << path[i];
+            if (i < path.size() - 1) {
+                std::cout << " -> ";
+            }
+        }
+        std::cout << "\n\n";
+    }
 }

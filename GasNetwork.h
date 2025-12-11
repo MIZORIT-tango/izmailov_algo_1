@@ -30,10 +30,15 @@ public:
     int findAvailablePipe(int diameter);
     bool canCreateConnection(int startStationId, int endStationId); 
 
+    void calculateAndShowMaxFlow();
+    void calculateAndShowShortestPath();
 private:
     void dfsTopologicalSort(int stationId, std::vector<bool>& visited, std::vector<int>& result);
     bool hasCycleDFS(int stationId, std::vector<bool>& visited, std::vector<bool>& recursionStack);
     std::vector<int> getVerticesWithNoIncomingEdges();
+
+    double calculateMaxFlow(int sourceId, int sinkId);
+    std::pair<double, std::vector<int>> calculateShortestPath(int startId, int endId);
 };
 
 #endif

@@ -34,6 +34,8 @@ void showMenu(std::map<int, Pipe>& pipes, std::map<int, CompressStation>& statio
             << "17. Topological sort\n"
             << "18. Batch delete CS\n"    
             << "19. Destroy connection\n" 
+            << "20. Calculate max Flow\n"
+            << "21. Calculate shortest Path\n"
             << "0. Exit\n";
 
         if (!isValidInput(menu_choose, "Enter your choice: ")) {
@@ -404,6 +406,14 @@ void showMenu(std::map<int, Pipe>& pipes, std::map<int, CompressStation>& statio
         case 19:
             destroyConnection(pipes, logger);
             gasNetwork.updateMatrices();
+            break;
+
+        case 20:
+            gasNetwork.calculateAndShowMaxFlow();
+            break;
+
+        case 21:
+            gasNetwork.calculateAndShowShortestPath();
             break;
 
         case 0:

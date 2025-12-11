@@ -1,11 +1,11 @@
 #include "operations.h"
+#include "globals.h"
 #include <algorithm>
 #include <iostream>
 
 void addPipe(std::map<int, Pipe>& pipes, Logger& logger) {
     std::string name;
     float length;
-    int diameter;
 
     if (!isValidInput(name, "Enter name of pipe:\n")) {
         std::cout << "Invalid name!\n\n";
@@ -19,9 +19,35 @@ void addPipe(std::map<int, Pipe>& pipes, Logger& logger) {
     }
     logger.logUserInput(std::to_string(length));
 
-    if (!isValidInput(diameter, "Enter diameter of pipe:\n") || diameter <= 0) {
-        std::cout << "Invalid diameter!\n\n";
-        return;
+    std::cout << "\nAvailable pipe diameters:\n";
+    std::cout << "==========================\n";
+    std::cout << "Diameter (mm) | Capacity (mln m^3/day)\n";
+    std::cout << "-------------------------------------\n";
+    for (const auto& pair : PIPE_DIAMETERS_CAPACITY) {
+        std::cout << pair.first << "           | " << pair.second << "\n";
+    }
+    std::cout << "=====================================\n\n";
+
+    int diameter;
+    bool validDiameter = false;
+
+    while (!validDiameter) {
+        if (!isValidInput(diameter, "Choose pipe diameter from the list above: ")) {
+            std::cout << "Invalid input! Please enter a number.\n";
+            continue;
+        }
+
+        if (PIPE_DIAMETERS_CAPACITY.find(diameter) == PIPE_DIAMETERS_CAPACITY.end()) {
+            std::cout << "Invalid diameter! Please choose from the available diameters.\n";
+            std::cout << "Available diameters: " << "\n";
+            for (const auto& pair : PIPE_DIAMETERS_CAPACITY) {
+                std::cout << pair.first << "\n";
+            }
+            std::cout << "\n";
+        }
+        else {
+            validDiameter = true;
+        }
     }
     logger.logUserInput(std::to_string(diameter));
 

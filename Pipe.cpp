@@ -1,4 +1,5 @@
 #include "pipe.h"
+#include "globals.h"
 
 Pipe::Pipe() : id(0), name(""), length(0.0f), diameter(0), status(true),
 isConnected(false), startStationId(-1), endStationId(-1) {
@@ -7,6 +8,25 @@ isConnected(false), startStationId(-1), endStationId(-1) {
 Pipe::Pipe(int pipeId, const std::string& n, float l, int d)
     : id(pipeId), name(n), length(l), diameter(d), status(true),
     isConnected(false), startStationId(-1), endStationId(-1) {
+}
+
+double Pipe::getCapacity() const {
+    if (status) {
+        return 0.0;
+    }
+
+    auto it = PIPE_DIAMETERS_CAPACITY.find(diameter);
+    if (it != PIPE_DIAMETERS_CAPACITY.end()) {
+        return it->second;
+    }
+    return 0.0;
+}
+
+double Pipe::getWeightForPath() const {
+    if (status) {
+        return std::numeric_limits<double>::infinity();
+    }
+    return static_cast<double>(length); 
 }
 
 void Pipe::connect(int startId, int endId) {
