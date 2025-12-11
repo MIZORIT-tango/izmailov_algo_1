@@ -28,11 +28,12 @@ public:
     void showConnectionsList();
 
     int findAvailablePipe(int diameter);
-    bool canCreateConnection(int startStationId, int endStationId);
+    bool canCreateConnection(int startStationId, int endStationId); 
 
 private:
     void dfsTopologicalSort(int stationId, std::vector<bool>& visited, std::vector<int>& result);
     bool hasCycleDFS(int stationId, std::vector<bool>& visited, std::vector<bool>& recursionStack);
+    std::vector<int> getVerticesWithNoIncomingEdges();
 };
 
 #endif

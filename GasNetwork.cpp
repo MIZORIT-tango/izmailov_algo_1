@@ -211,18 +211,15 @@ void GasNetwork::showConnectionsList() {
 void GasNetwork::dfsTopologicalSort(int stationId, std::vector<bool>& visited, std::vector<int>& result) {
     visited[stationId] = true;
 
-    // Рекурсивно посещаем все соседние КС (выходы)
     for (const auto& neighborPair : adjacencyMatrix[stationId]) {
         int neighborId = neighborPair.first;
         int connectionType = neighborPair.second;
 
-        // Если есть выход к этой КС и она не посещена
         if (connectionType == 1 && !visited[neighborId]) {
             dfsTopologicalSort(neighborId, visited, result);
         }
     }
 
-    // Добавляем текущую КС в результат (после всех её зависимостей)
     result.push_back(stationId);
 }
 
@@ -231,12 +228,10 @@ bool GasNetwork::hasCycleDFS(int stationId, std::vector<bool>& visited, std::vec
         visited[stationId] = true;
         recursionStack[stationId] = true;
 
-        // Проверяем всех соседей
         for (const auto& neighborPair : adjacencyMatrix[stationId]) {
             int neighborId = neighborPair.first;
             int connectionType = neighborPair.second;
 
-            // Если есть выход к соседу
             if (connectionType == 1) {
                 if (!visited[neighborId] && hasCycleDFS(neighborId, visited, recursionStack)) {
                     return true;
@@ -259,32 +254,102 @@ std::vector<int> GasNetwork::topologicalSort() {
         return result;
     }
 
-    // Проверка на циклы
-    std::vector<bool> visited(stations.size() + 1, false);
-    std::vector<bool> recursionStack(stations.size() + 1, false);
-
+    std::vector<int> verticesWithNoIncomingEdges;
     for (const auto& stationPair : stations) {
         int stationId = stationPair.first;
-        if (!visited[stationId] && hasCycleDFS(stationId, visited, recursionStack)) {
-            std::cout << "Обнаружен цикл в графе! Топологическая сортировка невозможна.\n";
-            return result;
+        bool hasIncomingEdges = false;
+
+        for (const auto& otherStationPair : stations) {
+            int otherId = otherStationPair.first;
+            if (adjacencyMatrix[otherId][stationId] == 1) { 
+                hasIncomingEdges = true;
+                break;
+            }
+        }
+
+        if (!hasIncomingEdges) {
+            verticesWithNoIncomingEdges.push_back(stationId);
         }
     }
 
-    // Сброс visited для основной сортировки
-    std::fill(visited.begin(), visited.end(), false);
-    result.clear();
+    if (verticesWithNoIncomingEdges.empty() && !stations.empty()) {
+        std::vector<bool> visited(stations.size() + 1, false);
+        std::vector<bool> recursionStack(stations.size() + 1, false);
 
-    // DFS для топологической сортировки
-    for (const auto& stationPair : stations) {
-        int stationId = stationPair.first;
-        if (!visited[stationId]) {
-            dfsTopologicalSort(stationId, visited, result);
+        for (const auto& stationPair : stations) {
+            int stationId = stationPair.first;
+            if (hasCycleDFS(stationId, visited, recursionStack)) {
+                std::cout << "Cycle detected! Topological sort is impossible.\n";
+                return result;
+            }
         }
     }
 
-    // Реверсируем результат (так как добавляли в конец)
-    std::reverse(result.begin(), result.end());
+    std::vector<int> indegree(stations.size() + 1, 0);
+
+    for (const auto& stationPair : stations) {
+        int stationId = stationPair.first;
+        for (const auto& otherStationPair : stations) {
+            int otherId = otherStationPair.first;
+            if (adjacencyMatrix[otherId][stationId] == 1) {
+                indegree[stationId]++;
+            }
+        }
+    }
+
+    std::vector<int> queue;
+    for (const auto& stationPair : stations) {
+        int stationId = stationPair.first;
+        if (indegree[stationId] == 0) {
+            queue.push_back(stationId);
+        }
+    }
+
+    while (!queue.empty()) {
+        int current = queue.back();
+        queue.pop_back();
+        result.push_back(current);
+
+        for (const auto& neighborPair : adjacencyMatrix[current]) {
+            int neighborId = neighborPair.first;
+            int connectionType = neighborPair.second;
+
+            if (connectionType == 1) {
+                indegree[neighborId]--;
+                if (indegree[neighborId] == 0) {
+                    queue.push_back(neighborId);
+                }
+            }
+        }
+    }
+
+    if (result.size() != stations.size()) {
+        std::cout << "Cycle detected! Topological sort is impossible (not all vertices processed).\n";
+        return std::vector<int>();
+    }
+
+    return result;
+}
+
+std::vector<int> GasNetwork::getVerticesWithNoIncomingEdges() {
+    std::vector<int> result;
+
+    for (const auto& stationPair : stations) {
+        int stationId = stationPair.first;
+        bool hasIncomingEdges = false;
+
+        for (const auto& otherStationPair : stations) {
+            int otherId = otherStationPair.first;
+            if (adjacencyMatrix[otherId][stationId] == 1) {
+                hasIncomingEdges = true;
+                break;
+            }
+        }
+
+        if (!hasIncomingEdges) {
+            result.push_back(stationId);
+        }
+    }
 
     return result;
 }
